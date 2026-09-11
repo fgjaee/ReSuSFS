@@ -148,23 +148,6 @@ function setupStatusBox() {
     }
 }
 
-function setupSupportCard() {
-    const card = document.getElementById('support-card');
-    const closeBtn = document.getElementById('support-card-close');
-    if (!card) return;
-
-    if (localStorage.getItem('resusfs_support_dismissed') === '1') {
-        card.style.display = 'none';
-        return;
-    }
-
-    if (card) card.onclick = () => linkRedirect('https://github.com/ahmed-alnassif#-support-my-work');
-    closeBtn.onclick = () => {
-        card.style.display = 'none';
-        localStorage.setItem('resusfs_support_dismissed', '1');
-    };
-}
-
 function setupBackupCard() {
     const exportBtn = document.getElementById('home-export-btn');
     const restoreBtn = document.getElementById('home-restore-btn');
@@ -179,7 +162,6 @@ function setupTelegramHint() {
 
 export function mount() {
     setupStatusBox();
-    setupSupportCard();
     setupBackupCard();
     setupTelegramHint();
 

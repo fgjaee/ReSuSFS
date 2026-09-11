@@ -146,12 +146,6 @@ function controlPanelEventlistener() {
 export function mount() {
     controlPanelEventlistener();
     setupDocsMenu();
-    setupDonateLink();
-}
-
-function setupDonateLink() {
-    const linkBtn = document.getElementById('donate-link-btn');
-    if (linkBtn) linkBtn.onclick = () => linkRedirect('https://github.com/ahmed-alnassif#-support-my-work');
 }
 
 export function onShow() {

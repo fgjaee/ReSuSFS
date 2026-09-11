@@ -60,44 +60,6 @@
     padding-left: 26px;
 }
 
-.support-card {
-    background-color: var(--md-sys-color-surface-container-high);
-    color: var(--md-sys-color-primary);
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    border: 1px solid var(--md-sys-color-outline-variant);
-}
-
-.support-card-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.support-card-icon {
-    flex-shrink: 0;
-    --md-icon-size: 20px;
-}
-
-.support-card-text {
-    font-size: 0.88em;
-    line-height: 1.4;
-}
-
-.support-card-close {
-    flex-shrink: 0;
-    --md-icon-button-icon-size: 18px;
-}
-
-.support-card-address {
-    font-size: 0.85em;
-    text-align: center;
-    font-weight: 600;
-    cursor: pointer;
-}
-
 /* Summary box */
 .summary-box h2 {
     margin: 0 0 12px 0;
