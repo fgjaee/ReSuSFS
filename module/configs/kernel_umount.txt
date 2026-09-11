@@ -1,4 +1,5 @@
-# KernelSU kernel_umount targets, one absolute mountpoint per line.
-# Legacy susfs4ksu try_umount.txt entries are migrated here.
-# Application is implemented by the kernel_umount release slice.
-
+# Additional KernelSU kernel_umount targets, one absolute mountpoint per line.
+# A target must be a current mountpoint; invalid, missing, relative, traversal,
+# whitespace-containing, and overlong paths are rejected and recorded in
+# state/kernel_umount.report.txt. Legacy susfs4ksu try_umount.txt entries are
+# migrated here for review. Sus'AF never wipes entries owned by other modules.

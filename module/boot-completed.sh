@@ -8,4 +8,7 @@ sh "$MODULE_DIR/SusAF.sh" --stage-late
 
 sh "$MODULE_DIR/SusAF.sh" --run-bootcompleted-scripts
 
+# Migrated scripts may contain ReSuSFS's old numeric disable command.
+sh "$MODULE_DIR/SusAF.sh" --apply-kernel-umount-feature || true
+
 # EOF

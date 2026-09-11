@@ -8,4 +8,7 @@ sh "$MODULE_DIR/SusAF.sh" --stage-early
 
 sh "$MODULE_DIR/SusAF.sh" --run-postfs-scripts
 
+# Re-assert Sus'AF's explicit policy after migrated/custom scripts have run.
+sh "$MODULE_DIR/SusAF.sh" --apply-kernel-umount-feature || true
+
 # EOF

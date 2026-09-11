@@ -17,3 +17,14 @@
 HIDE_SUS_MNTS_NON_SU=1
 ENABLE_LOG=0
 ENABLE_AVC_LOG_SPOOFING=1
+
+# KernelSU kernel_umount feature policy:
+#   unchanged = do not change the current KernelSU feature state
+#   enabled   = enable by the stable feature name (default)
+#   disabled  = disable it and do not register mountpoints
+KERNEL_UMOUNT_MODE=enabled
+
+# Automatically register only mountinfo entries identified by source=KSU or
+# module-backed root/source/overlay data. Explicit entries remain available in
+# kernel_umount.txt. The global KernelSU umount list is never wiped.
+AUTO_KERNEL_UMOUNT=1

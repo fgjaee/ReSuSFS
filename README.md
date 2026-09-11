@@ -38,7 +38,7 @@ All optional, all live under `/data/adb/SusAF/`. Missing or empty files mean "no
 | `open_redirect.txt` | redirect a path to another path |
 | `uname.txt` | spoof kernel release/version |
 | `cmdline_or_bootconfig.txt` | spoof `/proc/cmdline` or `/proc/bootconfig` |
-| `kernel_umount.txt` | explicit KernelSU kernel-umount targets (activation is under development) |
+| `kernel_umount.txt` | extra validated KernelSU kernel-umount targets; auto-discovery uses `source=KSU` and module-backed mount metadata |
 | `config.txt` | toggle kernel flags (mount hiding, logging, avc spoofing) |
 | `scripts/` | built-in scripts for spoofing and hiding |
 | `scripts_postfs.txt` | scripts to run at post-fs-data stage |

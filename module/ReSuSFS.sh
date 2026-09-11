@@ -10,6 +10,7 @@ SUSFS_BIN=/data/adb/ksu/bin/ksu_susfs
 SUSFS_MIN_VERSION="v2.2.0"
 
 . "$MODDIR/utils.sh"
+. "$MODDIR/lib/kernel-umount.sh"
 
 versionCode=$(grep versionCode $MODDIR/module.prop | sed 's/versionCode=//g' )
 
@@ -168,6 +169,13 @@ append_to_default() {
 
 apply_sus_paths() { [ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/sus_paths.txt" "$1" || return 1; }; apply_list "$PERSISTENT_DIR/sus_paths.txt" add_sus_path 1; }
 apply_sus_paths_loop() { [ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/sus_paths_loop.txt" "$1" || return 1; }; apply_list "$PERSISTENT_DIR/sus_paths_loop.txt" add_sus_path_loop 0; }
+apply_sus_paths_loop_direct() {
+	file="$1"
+	[ -n "$file" ] || { echo "[x] no sus path loop file specified"; return 1; }
+	[ -f "$file" ] && [ ! -L "$file" ] || { echo "[x] invalid sus path loop file: $file"; return 1; }
+	[ -r "$file" ] || { echo "[x] sus path loop file not readable: $file"; return 1; }
+	apply_list "$file" add_sus_path_loop 0
+}
 apply_sus_maps() { [ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/sus_maps.txt" "$1" || return 1; }; apply_list "$PERSISTENT_DIR/sus_maps.txt" add_sus_map 1; }
 
 apply_kstat() {
@@ -326,6 +334,7 @@ apply_toggles() {
 
 stage_early() {
 	echo "[+] stage: early (post-fs-data)"
+	apply_kernel_umount_feature
 	apply_kstat_add
 	apply_uname
 	apply_open_redirect
@@ -335,6 +344,8 @@ stage_early() {
 
 stage_late() {
 	echo "[+] stage: late (boot-completed)"
+	apply_kernel_umount_feature
+	apply_kernel_umount_mounts
 	apply_sus_paths
 	apply_sus_paths_loop
 	apply_sus_maps
@@ -370,6 +381,7 @@ show_help () {
 	printf "if [file] is given it is appended (deduped) into the default list, then applied:\n"
 	printf " --apply-sus-paths [file] \t\tadd_sus_path from list\n"
 	printf " --apply-sus-paths-loop [file] \t\tadd_sus_path_loop from list\n"
+	printf " --apply-sus-paths-loop-direct <file> \tapply a generated list without saving it\n"
 	printf " --apply-sus-maps [file] \t\tadd_sus_map from list\n"
 	printf " --apply-kstat-add [file] \t\tstage add_sus_kstat from list\n"
 	printf " --apply-kstat-update [file] \t\tcommit update_sus_kstat from list\n"
@@ -378,6 +390,8 @@ show_help () {
 	printf " --apply-cmdline-bootconfig [file] \tset_cmdline_or_bootconfig from file\n"
 	printf " --apply-cmdline-bootconfig-direct <file> \tapply generated data without saving it\n"
 	printf " --apply-toggles <early|late> [file] \tapply hide_sus_mnts/enable_log/avc_log_spoofing from config\n"
+	printf " --apply-kernel-umount-feature [config] \tapply the KernelSU feature policy\n"
+	printf " --apply-kernel-umount-mounts [config] [list] \tregister targeted mountpoints\n"
 	printf " --run-script <file> \t\t\trun a user script from UserHub\n"
 	printf " --run-postfs-scripts \t\t\trun all UserHub scripts flagged for post-fs-data\n"
 	printf " --run-bootcompleted-scripts \t\trun all UserHub scripts flagged for boot-completed\n"
@@ -394,6 +408,7 @@ case "$1" in
 	--status-report) status_report; exit ;;
 	--apply-sus-paths) apply_sus_paths "$2"; exit ;;
 	--apply-sus-paths-loop) apply_sus_paths_loop "$2"; exit ;;
+	--apply-sus-paths-loop-direct) apply_sus_paths_loop_direct "$2"; exit ;;
 	--apply-sus-maps) apply_sus_maps "$2"; exit ;;
 	--apply-kstat-add) apply_kstat_add "$2"; exit ;;
 	--apply-kstat-update) apply_kstat_update "$2"; exit ;;
@@ -402,6 +417,8 @@ case "$1" in
 	--apply-cmdline-bootconfig) apply_cmdline_bootconfig "$2"; exit ;;
 	--apply-cmdline-bootconfig-direct) apply_cmdline_bootconfig_direct "$2"; exit ;;
 	--apply-toggles) apply_toggles "$2" "$3"; exit ;;
+	--apply-kernel-umount-feature) apply_kernel_umount_feature "$2"; exit ;;
+	--apply-kernel-umount-mounts) apply_kernel_umount_mounts "$2" "$3"; exit ;;
 	--run-script) shift; run_script "$1"; exit ;;
 	--run-postfs-scripts) run_stage_scripts "$POSTFS_SCRIPTS_FILE"; exit ;;
 	--run-bootcompleted-scripts) run_stage_scripts "$BOOTCOMPLETED_SCRIPTS_FILE"; exit ;;
