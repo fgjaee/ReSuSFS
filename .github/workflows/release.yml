@@ -46,8 +46,10 @@ jobs:
         pnpm install --frozen-lockfile --config.verify-deps-before-run=false
         pnpm build
 
-    - name: Test migration
-      run: ./tests/test-migration.sh
+    - name: Test module scripts
+      run: |
+        ./tests/test-migration.sh
+        ./tests/test-boot-state.sh
 
     - name: Validate metadata
       run: |

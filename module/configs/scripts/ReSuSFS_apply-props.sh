@@ -36,7 +36,16 @@ set_prop_if_present ro.warranty_bit 0
 set_prop_if_present ro.secureboot.lockstate locked
 set_prop_if_present ro.bootmode normal
 
+resetprop | awk -F'[][]' '{print $2}' | while IFS= read -r prop; do
+	case "$prop" in
+		*verifiedbooterror|*verifyerrorpart)
+			resetprop -d "$prop" 2>/dev/null
+			resetprop -d -p "$prop" 2>/dev/null
+			;;
+	esac
+done
 resetprop -d ro.boot.verifiedbooterror 2>/dev/null
+resetprop -d ro.boot.verifyerrorpart 2>/dev/null
 resetprop -d crashrecovery.rescue_boot_count 2>/dev/null
 
 fingerprint=$(resetprop ro.build.fingerprint)

@@ -1,6 +1,7 @@
-# path to a text file whose contents replace /proc/cmdline (non-gki)
-# or /proc/bootconfig (gki) output
-# leave empty/untouched to skip
+# optional custom contents for /proc/cmdline (non-gki) or
+# /proc/bootconfig (gki). The built-in boot script generates and applies a
+# fresh sanitized snapshot without appending it here.
+# Leave empty/untouched to use only the generated snapshot.
 #
 # populate by dumping the real file first, then editing the fields you
 # want spoofed, e.g. for /proc/bootconfig style:

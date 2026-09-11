@@ -261,6 +261,14 @@ apply_uname() {
 apply_cmdline_bootconfig() {
 	[ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/cmdline_or_bootconfig.txt" "$1" || return 1; }
 	file="$PERSISTENT_DIR/cmdline_or_bootconfig.txt"
+	apply_cmdline_bootconfig_direct "$file"
+}
+
+apply_cmdline_bootconfig_direct() {
+	file="$1"
+	[ -n "$file" ] || { echo "[x] no cmdline/bootconfig file specified"; return 1; }
+	[ -f "$file" ] && [ ! -L "$file" ] || { echo "[x] invalid cmdline/bootconfig file: $file"; return 1; }
+	[ -r "$file" ] || { echo "[x] cmdline/bootconfig file not readable: $file"; return 1; }
 	[ -s "$file" ] || return
 	echo "[>] set_cmdline_or_bootconfig $file"
 	susfs set_cmdline_or_bootconfig "$file"
@@ -368,6 +376,7 @@ show_help () {
 	printf " --apply-open-redirect [file] \t\tadd_open_redirect from list\n"
 	printf " --apply-uname [file] \t\t\tset_uname from config\n"
 	printf " --apply-cmdline-bootconfig [file] \tset_cmdline_or_bootconfig from file\n"
+	printf " --apply-cmdline-bootconfig-direct <file> \tapply generated data without saving it\n"
 	printf " --apply-toggles <early|late> [file] \tapply hide_sus_mnts/enable_log/avc_log_spoofing from config\n"
 	printf " --run-script <file> \t\t\trun a user script from UserHub\n"
 	printf " --run-postfs-scripts \t\t\trun all UserHub scripts flagged for post-fs-data\n"
@@ -391,6 +400,7 @@ case "$1" in
 	--apply-open-redirect) apply_open_redirect "$2"; exit ;;
 	--apply-uname) apply_uname "$2"; exit ;;
 	--apply-cmdline-bootconfig) apply_cmdline_bootconfig "$2"; exit ;;
+	--apply-cmdline-bootconfig-direct) apply_cmdline_bootconfig_direct "$2"; exit ;;
 	--apply-toggles) apply_toggles "$2" "$3"; exit ;;
 	--run-script) shift; run_script "$1"; exit ;;
 	--run-postfs-scripts) run_stage_scripts "$POSTFS_SCRIPTS_FILE"; exit ;;
