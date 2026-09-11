@@ -1,12 +1,12 @@
 #!/bin/sh
 PATH=/data/adb/ksu/bin:$PATH
-MODDIR="/data/adb/modules/ReSuSFS"
-PERSISTENT_DIR="/data/adb/ReSuSFS"
+MODULE_DIR="${SUSAF_MODULE_DIR:-/data/adb/modules/susaf}"
+. "$MODULE_DIR/common.sh"
 
-sh "$MODDIR/post-fs-data.sh" > /dev/null 2>&1
+sh "$MODULE_DIR/post-fs-data.sh" > /dev/null 2>&1
 
-sh "$MODDIR/service.sh" > /dev/null 2>&1
+sh "$MODULE_DIR/service.sh" > /dev/null 2>&1
 
-echo "ReSuSFS: hot-install.sh done" >> /dev/kmsg
+echo "SusAF: hot-install.sh done" >> /dev/kmsg
 
 # EOF

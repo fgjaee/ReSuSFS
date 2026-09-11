@@ -1,6 +1,8 @@
 #!/bin/sh
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
-MODDIR="/data/adb/modules/ReSuSFS"
+MODULE_DIR="${SUSAF_MODULE_DIR:-${MODULE_DIR:-/data/adb/modules/susaf}}"
+[ -f "$MODULE_DIR/common.sh" ] && . "$MODULE_DIR/common.sh"
+MODDIR="$MODULE_DIR"
 
 banner() {
 	local dir="${1:-$MODDIR}"
@@ -40,7 +42,6 @@ download_file() {
 update_susfs() {
 	local BB url="https://gitlab.com/simonpunk/susfs4ksu/-/raw/gki-android14-6.1/ksu_module_susfs/tools/ksu_susfs_arm64?ref_type=heads"
 	local tmp="/data/local/tmp/ksu_susfs_arm64"
-	local DEST_BIN_DIR="/data/adb/ksu/bin"
 	local ARCH="$(getprop ro.product.cpu.abi)"
 
 	if [ ! -d "$DEST_BIN_DIR" ]; then

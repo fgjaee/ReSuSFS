@@ -1,8 +1,7 @@
 import { exec } from 'kernelsu-alt';
-import { showPrompt, basePath, linkRedirect, filePaths, updateUIVisibility, moduleDirectory } from '../../utils/util.js';
+import { showPrompt, linkRedirect, updateUIVisibility, moduleDirectory } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
-import { FileSelector } from '../../utils/file_selector.js';
-import { addCopyToClipboardListeners, setupDocsMenu } from '../../utils/docs.js';
+import { setupDocsMenu } from '../../utils/docs.js';
 import { formatCapturedLogs, capturedLogs } from '../../utils/log_catcher.js';
 import { exportConfig, restoreConfig } from '../../utils/backup.js';
 
@@ -39,9 +38,9 @@ function openAboutDialog() {
     const authorLink  = document.getElementById('about-author-link');
     const licenseLink = document.getElementById('about-license-link');
     const repoLink    = document.getElementById('about-repo-link');
-    if (authorLink)  authorLink.onclick  = (e) => { e.preventDefault(); linkRedirect('https://github.com/ahmed-alnassif'); };
+    if (authorLink)  authorLink.onclick  = (e) => { e.preventDefault(); linkRedirect('https://github.com/fgjaee'); };
     if (licenseLink) licenseLink.onclick = (e) => { e.preventDefault(); linkRedirect('https://www.gnu.org/licenses/gpl-3.0.html'); };
-    if (repoLink)    repoLink.onclick    = (e) => { e.preventDefault(); linkRedirect('https://github.com/ahmed-alnassif/ReSuSFS'); };
+    if (repoLink)    repoLink.onclick    = (e) => { e.preventDefault(); linkRedirect('https://github.com/fgjaee/ReSuSFS'); };
 
     exec(`cat ${moduleDirectory}/module.prop`)
         .then(({ errno, stdout }) => {
@@ -80,7 +79,7 @@ function openLogViewer() {
  */
 async function saveLogsToFile() {
     const logs = formatCapturedLogs();
-    const fileName = `/storage/emulated/0/Download/ReSuSFS_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
+    const fileName = `/storage/emulated/0/Download/SusAF_logs_${new Date().toISOString().replace(/[:.]/g, '-')}.txt`;
     const result = await exec(`
 cat << 'LOG_EOF' > "${fileName}"
 ${logs}
@@ -125,8 +124,7 @@ function refreshLogTerminal() {
 function controlPanelEventlistener() {
     const controlPanel = {
         "language-container": openLanguageMenu,
-        "telegram-group": () => linkRedirect('https://t.me/ahmed_alnassif_tg'),
-        "github-issues": () => linkRedirect('https://github.com/ahmed-alnassif/ReSuSFS/issues/new'),
+        "github-issues": () => linkRedirect('https://github.com/fgjaee/ReSuSFS/issues/new'),
         "export": exportConfig,
         "restore": restoreConfig,
         "view-webui-log": openLogViewer,

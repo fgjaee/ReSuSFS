@@ -5,7 +5,7 @@ import { openEditor } from '../../utils/editor.js';
 import { FileSelector } from '../../utils/file_selector.js';
 
 /**
- * One organized box per config file ReSuSFS.sh reads. Each box is fully
+ * One organized box per config file SusAF reads. Each box is fully
  * self-contained: edit the default file, apply it, or apply a custom file
  * picked from storage without touching the default at all.
  */

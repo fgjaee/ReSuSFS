@@ -29,10 +29,9 @@ const materialHighlightStyle = HighlightStyle.define([
  * Pick a language extension based on the file being edited. Shell mode
  * works well for both real .sh scripts and our config files, since they
  * both use "#" comments and quoted paths.
- * @param {string} displayName
  * @returns {import('@codemirror/state').Extension}
  */
-function languageForFile(displayName) {
+function languageForFile() {
     return shellLanguage;
 }
 
@@ -136,7 +135,7 @@ export function openEditor(displayName, content, onSave) {
     fileNameInput.style.width = 'auto';
 
     onSaveCallback = onSave;
-    const langExtension = languageForFile(displayName);
+    const langExtension = languageForFile();
 
     if (!setupEditor) {
         setupEditor = true;

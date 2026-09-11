@@ -5,7 +5,7 @@
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
 
-LIST_FILE="/data/adb/ReSuSFS/tmp_sus_paths_loop.txt"
+LIST_FILE="/data/adb/SusAF/tmp_sus_paths_loop.txt"
 
 : > "$LIST_FILE"
 
@@ -42,7 +42,7 @@ for pty in /dev/pts/*; do
 done
 
 if [ -s "$LIST_FILE" ]; then
-	if ReSuSFS --apply-sus-paths-loop "$LIST_FILE"; then
+	if SusAF --apply-sus-paths-loop "$LIST_FILE"; then
 		echo "[+] path hiding applied successfully
 [*] reboot recommended for persistent hiding across boot"
 	else

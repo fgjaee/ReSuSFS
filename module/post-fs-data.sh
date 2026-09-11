@@ -1,11 +1,11 @@
 #!/bin/sh
 PATH=/data/adb/ksu/bin:$PATH
-MODDIR="/data/adb/modules/ReSuSFS"
-PERSISTENT_DIR="/data/adb/ReSuSFS"
+MODULE_DIR="${SUSAF_MODULE_DIR:-/data/adb/modules/susaf}"
+. "$MODULE_DIR/common.sh"
 
 # apply early-stage susfs config now that mounts have settled
-sh $MODDIR/ReSuSFS.sh --stage-early
+sh "$MODULE_DIR/SusAF.sh" --stage-early
 
-sh $MODDIR/ReSuSFS.sh --run-postfs-scripts
+sh "$MODULE_DIR/SusAF.sh" --run-postfs-scripts
 
 # EOF

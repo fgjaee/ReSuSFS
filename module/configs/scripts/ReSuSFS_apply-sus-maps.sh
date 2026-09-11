@@ -5,7 +5,7 @@
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
 
-LIST_FILE="/data/adb/ReSuSFS/tmp_sus_maps.txt"
+LIST_FILE="/data/adb/SusAF/tmp_sus_maps.txt"
 
 : > "$LIST_FILE"
 
@@ -16,7 +16,7 @@ find /data/adb/modules -type f \( -name "*.ttf" -o -name "*.otf" -o -name "*.ttc
 sort -u "$LIST_FILE" -o "$LIST_FILE"
 
 if [ -s "$LIST_FILE" ]; then
-	if ReSuSFS --apply-sus-maps "$LIST_FILE"; then
+	if SusAF --apply-sus-maps "$LIST_FILE"; then
 		echo "[+] map hiding applied successfully"
 		echo "[*] reboot recommended for changes to take full effect"
 	else

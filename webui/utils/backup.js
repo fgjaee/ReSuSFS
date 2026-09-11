@@ -1,10 +1,10 @@
 import { exec } from 'kernelsu-alt';
-import { showPrompt, basePath, filePaths } from './util.js';
+import { showPrompt, basePath } from './util.js';
 import { getString } from './language.js';
 import { FileSelector } from './file_selector.js';
 
 /**
- * Export all ReSuSFS config files (and any UserHub scripts) into a
+ * Export all Sus'AF config files (and any UserHub scripts) into a
  * tar.gz archive under /storage/emulated/0/Download/.
  * @returns {Promise<void>}
  */
@@ -12,22 +12,22 @@ export async function exportConfig() {
     const command = `
 cd "${basePath}" || { echo "ERROR_CD"; exit 1; }
 
-if [ -z "\$(ls -A . 2>/dev/null)" ]; then
+if [ -z "$(ls -A . 2>/dev/null)" ]; then
     echo "NOTHING_TO_EXPORT"
     exit 1
 fi
 
 DIR="/storage/emulated/0/Download"
-mkdir -p "\$DIR/ReSuSFS/log"
-TAR_LOG="\$DIR/ReSuSFS/log/ReSuSFS_Export_tar.log"
-OUT="\${DIR}/ReSuSFS_config_\$(date +%Y%m%d_%H%M%S).tar.gz"
-busybox tar czf "\$OUT" . 2> "\$TAR_LOG"
+mkdir -p "$DIR/SusAF/log"
+TAR_LOG="$DIR/SusAF/log/SusAF_Export_tar.log"
+OUT="\${DIR}/SusAF_config_$(date +%Y%m%d_%H%M%S).tar.gz"
+busybox tar czf "$OUT" . 2> "$TAR_LOG"
 
-if [ -f "\$OUT" ]; then
-    echo "\$OUT"
+if [ -f "$OUT" ]; then
+    echo "$OUT"
 else
     echo "ERROR_TAR_FAILED"
-    cat "\$TAR_LOG" 2>/dev/null
+    cat "$TAR_LOG" 2>/dev/null
     exit 1
 fi
     `;

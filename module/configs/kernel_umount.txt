@@ -1,0 +1,4 @@
+# KernelSU kernel_umount targets, one absolute mountpoint per line.
+# Legacy susfs4ksu try_umount.txt entries are migrated here.
+# Application is implemented by the kernel_umount release slice.
+

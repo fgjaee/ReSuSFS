@@ -1,9 +1,9 @@
 {
-	"readme": "https://raw.githubusercontent.com/ahmed-alnassif/ReSuSFS/refs/heads/master/README.md",
+	"readme": "https://raw.githubusercontent.com/fgjaee/ReSuSFS/refs/heads/susaf-dev/README.md",
 	"categories": [
 		"SuSFS",
-		"KernelSU",
+		"KernelSU"
 	],
-	"support": "https://github.com/ahmed-alnassif/ReSuSFS/issues",
+	"support": "https://github.com/fgjaee/ReSuSFS/issues",
 	"license": "GPLv3"
 }

@@ -2,7 +2,7 @@
 
 set -e
 
-MODULE_NAME="ReSuSFS"
+MODULE_NAME="SusAF"
 MODULE_BUILD_NAME="module"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
@@ -72,11 +72,9 @@ build_webui() {
 		return
 	fi
 
-	rm -rf "$BUILD_DIR/$MODULE_BUILD_NAME"
-	rm -f $BUILD_DIR/*.zip
-
 	print_info "Building webui..."
 
+	rm -rf "$BUILD_DIR/webui"
 	mkdir -p "$BUILD_DIR/webui"
 
 	cp -r "$WEBUI_DIR"/. "$BUILD_DIR/webui/"
@@ -121,9 +119,12 @@ get_version_info() {
 prepare_build_dir() {
 	print_info "Preparing module..."
 
+	rm -rf "$BUILD_DIR/$MODULE_BUILD_NAME" "$BUILD_DIR/webui"
+	rm -f "$BUILD_DIR"/*.zip
 	mkdir -p "$BUILD_DIR/$MODULE_BUILD_NAME"
 
 	cp -r "$MODULE_DIR"/. "$BUILD_DIR/$MODULE_BUILD_NAME/"
+	rm -rf "$BUILD_DIR/$MODULE_BUILD_NAME/webroot"
 }
 
 create_zip() {
@@ -138,9 +139,9 @@ create_zip() {
 
 main() {
 	check_prerequisites
-	build_webui
 	get_version_info
 	prepare_build_dir
+	build_webui
 	create_zip
 
 	print_info "Build completed successfully!"

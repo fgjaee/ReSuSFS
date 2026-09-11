@@ -1,25 +1,17 @@
-# ReSuSFS
+# Sus'AF
 
-<p align="center">
-  <img src="docs/banner.png" alt="ReSuSFS Banner">
-</p>
-
-[![Build Status](https://github.com/ahmed-alnassif/ReSuSFS/actions/workflows/release.yml/badge.svg)](https://github.com/ahmed-alnassif/ReSuSFS/actions/workflows/release.yml)
-[![Latest Release](https://img.shields.io/github/v/release/ahmed-alnassif/ReSuSFS?label=Latest%20Release&color=00aa00)](https://github.com/ahmed-alnassif/ReSuSFS/releases)
-[![Downloads](https://img.shields.io/github/downloads/ahmed-alnassif/ReSuSFS/total?label=Downloads&color=00aa00)](https://github.com/ahmed-alnassif/ReSuSFS/releases)
-[![Group](https://img.shields.io/badge/Telegram-Group-blue.svg?logo=telegram)](https://t.me/ahmed_alnassif_tg)
-[![GitHub License](https://img.shields.io/github/license/ahmed-alnassif/ReSuSFS?logo=gnu)](/LICENSE)
+[![Build Status](https://github.com/fgjaee/ReSuSFS/actions/workflows/release.yml/badge.svg?branch=susaf-dev)](https://github.com/fgjaee/ReSuSFS/actions/workflows/release.yml)
+[![Latest Release](https://img.shields.io/github/v/release/fgjaee/ReSuSFS?label=Latest%20Release&color=00aa00)](https://github.com/fgjaee/ReSuSFS/releases)
+[![Downloads](https://img.shields.io/github/downloads/fgjaee/ReSuSFS/total?label=Downloads&color=00aa00)](https://github.com/fgjaee/ReSuSFS/releases)
+[![GitHub License](https://img.shields.io/github/license/fgjaee/ReSuSFS?logo=gnu)](/LICENSE)
 [![SuSFS](https://img.shields.io/badge/SuSFS-4CAF50?&logo=gitlab&logoColor=white)](https://gitlab.com/simonpunk/susfs4ksu)
 [![KernelSU](https://img.shields.io/badge/KernelSU-000000?&logo=github&logoColor=white)](https://github.com/tiann/KernelSU)
 [![ReSukiSU](https://img.shields.io/badge/ReSukiSU-E91E63?&logo=github&logoColor=white)](https://github.com/ReSukiSU/ReSukiSU)
-[![Crowdin](https://badges.crowdin.net/resusfs/localized.svg)](https://crowdin.com/project/resusfs)
 
-Root hiding made simple, powerful when you need it. A [KernelSU](https://kernelsu.org) module and WebUI that turns SuSFS into clean config files and toggle switches for everyday use, with **strong hiding applied out of the box** via built-in spoofing and hiding scripts for one-tap protection, plus a script manager for power users who want more, all without leaving the WebUI.
+Sus'AF is a [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)-based [KernelSU](https://kernelsu.org) module and WebUI for managing SuSFS, mount hiding, and UserHub automation while keeping the fork practical to sync with upstream.
 
-> [!Important]
-> **Future Direction**
->
-> ReSuSFS will gradually move beyond SuSFS management. SuSFS will become optional, while development will focus more on UserHub, giving users greater freedom and control to create, manage, and automate their own scripts and configurations.
+> [!WARNING]
+> Sus'AF is currently a development build. Do not treat it as a stable daily-driver release until the prerelease checklist and device tests are complete.
 
 ## Requirements
 
@@ -27,7 +19,7 @@ Root hiding made simple, powerful when you need it. A [KernelSU](https://kernels
 
 ## Install
 
-1. Download the [latest release](https://github.com/ahmed-alnassif/ReSuSFS/releases/latest)
+1. Download the [latest Sus'AF release](https://github.com/fgjaee/ReSuSFS/releases/latest)
 2. Flash the zip in KernelSU Manager
 3. Reboot
 4. Strong hiding is applied automatically, no setup needed
@@ -35,7 +27,7 @@ Root hiding made simple, powerful when you need it. A [KernelSU](https://kernels
 
 ## Config files
 
-All optional, all live under `/data/adb/ReSuSFS/`. Missing or empty files mean "nothing to apply" for that feature, no errors. Entries are appended in the order they appear, top line first.
+All optional, all live under `/data/adb/SusAF/`. Missing or empty files mean "nothing to apply" for that feature, no errors. Entries are appended in the order they appear, top line first.
 
 | File | What it does |
 |---|---|
@@ -46,6 +38,7 @@ All optional, all live under `/data/adb/ReSuSFS/`. Missing or empty files mean "
 | `open_redirect.txt` | redirect a path to another path |
 | `uname.txt` | spoof kernel release/version |
 | `cmdline_or_bootconfig.txt` | spoof `/proc/cmdline` or `/proc/bootconfig` |
+| `kernel_umount.txt` | explicit KernelSU kernel-umount targets (activation is under development) |
 | `config.txt` | toggle kernel flags (mount hiding, logging, avc spoofing) |
 | `scripts/` | built-in scripts for spoofing and hiding |
 | `scripts_postfs.txt` | scripts to run at post-fs-data stage |
@@ -53,7 +46,9 @@ All optional, all live under `/data/adb/ReSuSFS/`. Missing or empty files mean "
 
 ## Built-in Scripts
 
-Pre-made scripts for common spoofing and hiding tasks. They live in `/data/adb/ReSuSFS/scripts/` and are enabled by default for set-and-forget users. They can be disabled by removing their filenames from `scripts_postfs.txt` or `scripts_bootcompleted.txt`.
+Pre-made scripts for common spoofing and hiding tasks. They live in `/data/adb/SusAF/scripts/` and are enabled by default for set-and-forget users. They can be disabled by removing their filenames from `scripts_postfs.txt` or `scripts_bootcompleted.txt`.
+
+The inherited built-in script filenames retain their `ReSuSFS_` prefix so existing schedules migrate without being rewritten.
 
 Strong hiding is applied out of the box with no configuration needed. Power users can fine-tune individual scripts via the WebUI or by editing the files directly.
 
@@ -95,22 +90,26 @@ A tab for managing your own shell scripts without a terminal:
 - Run a script on demand, output streams live in the WebUI
 - Toggle a script to run automatically at `post-fs-data` and/or `boot-completed`
 
-Scripts live under `/data/adb/ReSuSFS/scripts/`. Which scripts run at which stage is tracked in `scripts_postfs.txt` and `scripts_bootcompleted.txt` under the same directory.
+Scripts live under `/data/adb/SusAF/scripts/`. Which scripts run at which stage is tracked in `scripts_postfs.txt` and `scripts_bootcompleted.txt` under the same directory.
+
+## Migration
+
+On first installation, Sus'AF safely imports understood configuration from `/data/adb/ReSuSFS` and then `/data/adb/susfs4ksu`. Existing Sus'AF values win. UserHub scripts are copied byte-for-byte with their executable modes, and their post-fs-data, boot-completed, and cron assignments remain in the same stage.
+
+Legacy sources are never deleted or edited. Snapshots, rejected data, and conflicts are stored under `/data/adb/SusAF/migration/`. After a successful installation, an installed ReSuSFS module is disabled but retained so both modules cannot run competing boot services.
 
 ## CLI
 
-Every command can be run manually via `ReSuSFS <flag>`. Useful for scripting, debugging, or if you just prefer terminal over WebUI.
+Every command can be run manually via `SusAF <flag>`. A `ReSuSFS` compatibility command is installed so migrated UserHub scripts continue to work.
 
 ```
- _____       _____        _____ ______ _____ 
-|  __ \     / ____|      / ____|  ____/ ____|
-| |__) |___| (___  _   _| (___ | |__ | (___  
-|  _  // _ \\___ \| | | |\___ \|  __| \___ \ 
-| | \ \  __/____) | |_| |____) | |    ____) |
-|_|  \_\___|_____/ \__,_|_____/|_|   |_____/ 
+  ____            _      _    _____
+ / ___| _   _ ___| |    / \  |  ___|
+ \___ \| | | / __| |   / _ \ | |_
+  ___) | |_| \__ \ |  / ___ \|  _|
+ |____/ \__,_|___/_| /_/   \_\_|
 
-Authors:  ahmed-alnassif, simonpunk@gitlab.com
-Version: v2.3.0
+                         Sus'AF
 
 [%] status: active ✅ | susfs v2.3.0 (GKI) | features: 9 🧩
 usage:
@@ -141,13 +140,13 @@ if [file] is given it is appended (deduped) into the default list, then applied:
 Every `--apply-*` flag accepts an optional file path. Passing one appends that file's contents into the default config file (deduplicated, comments preserved), then applies the merged default. It does not run standalone or get discarded after, it becomes a permanent part of your saved config:
 
 ```sh
-ReSuSFS --apply-sus-paths /sdcard/my_paths.txt
+SusAF --apply-sus-paths /sdcard/my_paths.txt
 ```
 
 Check status any time to confirm SuSFS is active and see which kernel features are enabled:
 
 ```sh
-ReSuSFS --status
+SusAF --status
 ```
 
 ## Backup and share your config
@@ -158,18 +157,19 @@ Export creates an archive in `/storage/emulated/0/Download/`. Send that file to 
 
 ## Community
 
-Join the discussion, get support, and stay up to date on ReSuSFS and other projects:
+Report Sus'AF bugs and follow development in this fork:
 
-- **Telegram Group:** [ahmed_alnassif_tg](https://t.me/ahmed_alnassif_tg)
+- **Issues:** [fgjaee/ReSuSFS issues](https://github.com/fgjaee/ReSuSFS/issues)
 
 ## Credits
 
 - [SuSFS](https://gitlab.com/simonpunk/susfs4ksu) by simonpunk
+- [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS) by Ahmed Al-Nassif is the upstream base
 - WebUI built on top of [bindhosts](https://github.com/bindhosts/bindhosts) by the bindhosts team
 
 ## Author
 
-[Ahmed Al-Nassif](https://github.com/ahmed-alnassif) (@ahmed-alnassif)
+[fgjaee](https://github.com/fgjaee), with upstream ReSuSFS contributors credited in the project history
 
 ## License
 

@@ -1,7 +1,6 @@
 import { exec } from 'kernelsu-alt';
 import { basePath, moduleDirectory, filePaths, runReSuSFS, updateUIVisibility, linkRedirect } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
-import { addCopyToClipboardListeners } from '../../utils/docs.js';
 import { exportConfig, restoreConfig } from '../../utils/backup.js';
 
 /**
@@ -157,7 +156,7 @@ function setupBackupCard() {
 
 function setupTelegramHint() {
     const hint = document.getElementById('telegram-hint');
-    if (hint) hint.onclick = () => linkRedirect('https://t.me/ahmed_alnassif_tg');
+    if (hint) hint.onclick = () => linkRedirect('https://github.com/fgjaee/ReSuSFS/issues');
 }
 
 export function mount() {

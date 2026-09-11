@@ -1,16 +1,16 @@
 #!/bin/sh
 
 PATH=/data/adb/ksu/bin:$PATH
-MODDIR="/data/adb/modules/ReSuSFS"
-PERSISTENT_DIR="/data/adb/ReSuSFS"
+MODULE_DIR="${SUSAF_MODULE_DIR:-/data/adb/modules/susaf}"
+. "$MODULE_DIR/common.sh"
 
-. "$MODDIR/utils.sh"
+. "$MODULE_DIR/utils.sh"
 
 banner
 
 update_susfs || exit 1
 
 export NO_BANNER=1
-sh $MODDIR/ReSuSFS.sh --status
+sh "$MODULE_DIR/SusAF.sh" --status
 
 # EOF

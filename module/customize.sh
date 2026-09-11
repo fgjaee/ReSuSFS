@@ -1,9 +1,8 @@
 #!/bin/sh
 
-DEST_BIN_DIR=/data/adb/ksu/bin
-PERSISTENT_DIR=/data/adb/ReSuSFS
-
+. "$MODPATH/common.sh"
 . "$MODPATH/utils.sh"
+. "$MODPATH/migrate.sh"
 
 export MODULE_HOT_INSTALL_REQUEST="true"
 export MODULE_HOT_RUN_SCRIPT="hotinstall.sh"
@@ -28,16 +27,18 @@ detect_key_press() {
 	fi
 }
 
-ui_print "[*] Have you backed up your configuration?"
-ui_print "[*] VOLUME UP for YES, DOWN for NO"
-if ! detect_key_press; then
-	ui_print "[!] Please back up your configuration first"
-	exit 1
-fi
-
 CONFIG_DIR="$MODPATH/configs"
 
 [ ! -d "$CONFIG_DIR" ] || [ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ] && ui_print "[!] No config files found" && exit 0
+
+ui_print "[*] Legacy configuration is copied into $PERSISTENT_DIR; source directories are never deleted"
+migrate_legacy_configs || {
+	ui_print "[!] Migration did not complete. Installation stopped before changing the legacy module."
+	exit 1
+}
+
+mkdir -p "$PERSISTENT_DIR" || exit 1
+chmod 700 "$PERSISTENT_DIR" 2>/dev/null
 
 handle_files() {
 	src_dir="$1"
@@ -86,12 +87,13 @@ rm -rf "$CONFIG_DIR"
 
 update_susfs || exit 1
 
-chmod 755 "$MODPATH/ReSuSFS.sh"
+chmod 755 "$MODPATH/SusAF.sh" "$MODPATH/ReSuSFS.sh"
 chmod 644 "$MODPATH/post-fs-data.sh" "$MODPATH/service.sh" "$MODPATH/uninstall.sh" 2>/dev/null
 
 if [ -d "$DEST_BIN_DIR" ]; then
-	ui_print "[+] creating symlink in $DEST_BIN_DIR"
-	ln -sf "/data/adb/modules/ReSuSFS/ReSuSFS.sh" "$DEST_BIN_DIR/ReSuSFS"
+	ui_print "[+] Creating SusAF and ReSuSFS compatibility commands in $DEST_BIN_DIR"
+	ln -sf "$MODULE_DIR/SusAF.sh" "$SUSAF_CLI"
+	ln -sf "$MODULE_DIR/SusAF.sh" "$RESUSFS_COMPAT_CLI"
 fi
 
 if [ ! -d "$PERSISTENT_DIR/.webui_config" ] || [ ! -f "$PERSISTENT_DIR/.webui_config/custom.css" ]; then
@@ -100,5 +102,10 @@ if [ ! -d "$PERSISTENT_DIR/.webui_config" ] || [ ! -f "$PERSISTENT_DIR/.webui_co
 else
 	rm -f "$MODPATH/custom.css"
 fi
+
+disable_legacy_resusfs_module || {
+	ui_print "[!] Could not disable the legacy ReSuSFS module; disable it manually before reboot"
+	exit 1
+}
 
 # EOF

@@ -1,7 +1,8 @@
 #!/bin/sh
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
-MODDIR="/data/adb/modules/ReSuSFS"
-PERSISTENT_DIR="/data/adb/ReSuSFS"
+MODULE_DIR="${SUSAF_MODULE_DIR:-/data/adb/modules/susaf}"
+. "$MODULE_DIR/common.sh"
+MODDIR="$MODULE_DIR"
 USER_SCRIPTS_DIR="$PERSISTENT_DIR/scripts"
 POSTFS_SCRIPTS_FILE="$PERSISTENT_DIR/scripts_postfs.txt"
 BOOTCOMPLETED_SCRIPTS_FILE="$PERSISTENT_DIR/scripts_bootcompleted.txt"
@@ -93,7 +94,7 @@ sync_cron_scripts() {
 		name=$(echo "$line" | cut -d' ' -f6-)
 		[ -z "$name" ] && continue
 		[ -f "$USER_SCRIPTS_DIR/$name" ] || { echo "[!] cron script not found, skipping: $name"; continue; }
-		echo "$schedule sh $MODDIR/ReSuSFS.sh --run-script $USER_SCRIPTS_DIR/$name >> $PERSISTENT_DIR/cron.log 2>&1" >> "$tmp"
+		echo "$schedule sh $MODULE_DIR/SusAF.sh --run-script $USER_SCRIPTS_DIR/$name >> $PERSISTENT_DIR/cron.log 2>&1" >> "$tmp"
 	done
 
 	busybox crontab -c "$CROND_DIR" "$tmp" 2>/dev/null

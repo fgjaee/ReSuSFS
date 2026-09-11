@@ -5,7 +5,7 @@
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
 
-LIST_FILE="/data/adb/ReSuSFS/tmp_mount_hiding.txt"
+LIST_FILE="/data/adb/SusAF/tmp_mount_hiding.txt"
 
 : > "$LIST_FILE"
 
@@ -28,7 +28,7 @@ done < /proc/mounts
 sort -u "$LIST_FILE" -o "$LIST_FILE"
 
 if [ -s "$LIST_FILE" ]; then
-	if ReSuSFS --apply-sus-paths-loop "$LIST_FILE"; then
+	if SusAF --apply-sus-paths-loop "$LIST_FILE"; then
 		echo "[+] mount hiding applied successfully"
 		echo "[*] reboot recommended if you want the resulting state to be refreshed from boot"
 	else

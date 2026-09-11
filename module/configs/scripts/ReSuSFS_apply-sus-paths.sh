@@ -5,7 +5,7 @@
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
 
-LIST_FILE="/data/adb/ReSuSFS/tmp_sus_paths.txt"
+LIST_FILE="/data/adb/SusAF/tmp_sus_paths.txt"
 ROM_NAMES="lineage infinity evolution crdroid mistos axion pixelos rising lunaris halcyon havoc alphadroid bliss calyx derpfest graphene lmodroid lumine matrixx clover yaap aospa"
 
 : > "$LIST_FILE"
@@ -19,7 +19,7 @@ done
 find /data -maxdepth 1 -iname "*${rom}*" 2>/dev/null >> "$LIST_FILE"
 
 if [ -s "$LIST_FILE" ]; then
-	if ReSuSFS --apply-sus-paths "$LIST_FILE"; then
+	if SusAF --apply-sus-paths "$LIST_FILE"; then
 		echo "[+] path hiding applied successfully
 [*] reboot recommended for changes to take full effect"
 	else

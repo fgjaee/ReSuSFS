@@ -201,7 +201,7 @@ async function setCronEntry(name, expr) {
         ? `touch "${cronFile}"; sed -i "/ ${escaped}$/d" "${cronFile}" 2>/dev/null; echo "${expr} ${name}" >> "${cronFile}"`
         : `sed -i "/ ${escaped}$/d" "${cronFile}" 2>/dev/null`;
     await exec(command);
-    await exec(`sh ${moduleDirectory}/ReSuSFS.sh --sync-cron-scripts`);
+    await exec(`sh ${moduleDirectory}/SusAF.sh --sync-cron-scripts`);
 }
 
 /**
@@ -455,18 +455,6 @@ function markScriptsDirty() {
     scriptsDirty = true;
 }
 
-/**
- * Refresh the list only if something has actually changed since the
- * last fetch, so switching tabs repeatedly doesn't re-run the whole
- * shell scan and DOM rebuild every time.
- * @returns {Promise<void>}
- */
-async function refreshListIfDirty() {
-    if (!scriptsDirty) return;
-    await refreshList();
-    scriptsDirty = false;
-}
-
 async function refreshList() {
     const mode = getSortMode();
     const { scripts, postfsStates, bootcompletedStates } = await listScripts(mode);
@@ -705,7 +693,7 @@ async function createScript() {
             return;
         }
 
-        await exec(`printf '#!/system/bin/sh\\n#title=\\n#author=\\n#desc=\\n#tags=\\n\\nPATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:\$PATH\\n\\n\\n' > "${path}" && chmod 755 "${path}"`);
+        await exec(`printf '#!/system/bin/sh\\n#title=\\n#author=\\n#desc=\\n#tags=\\n\\nPATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH\\n\\n\\n' > "${path}" && chmod 755 "${path}"`);
         markScriptsDirty();
         dialog.close();
         refreshList();

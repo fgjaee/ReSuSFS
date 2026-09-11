@@ -106,7 +106,7 @@ def dedupe_preserve_order(items):
 
 
 def build_body(version, buckets, other, bot_commits):
-	lines = [f"## ReSuSFS {version} Changelog", ""]
+	lines = [f"## Sus'AF {version} Changelog", ""]
 
 	for _, label in CATEGORY_MAP:
 		items = dedupe_preserve_order(buckets.get(label, []))
@@ -143,7 +143,7 @@ def main():
 	parser.add_argument("--to", dest="to_ref", default="HEAD")
 	parser.add_argument("--version", required=True)
 	parser.add_argument("--output", default="changelog_body.md")
-	parser.add_argument("--repo-slug", default="ahmed-alnassif/ReSuSFS")
+	parser.add_argument("--repo-slug", default="fgjaee/ReSuSFS")
 	args = parser.parse_args()
 
 	commits = get_commits(args.repo_slug, args.from_ref, args.to_ref)

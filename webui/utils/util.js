@@ -5,7 +5,7 @@ import { getString } from './language.js';
 export let developerOption = false;
 export function setDeveloperOption(value) { developerOption = value; }
 
-// The 8 optional config files ReSuSFS.sh actually reads, and the
+// The optional config files SusAF reads, and the
 // --apply-* flag / two-phase stage each one maps to.
 export const filePaths = {
     sus_paths: 'sus_paths.txt',
@@ -29,8 +29,8 @@ export const applyFlags = {
     cmdline_bootconfig: '--apply-cmdline-bootconfig',
 };
 
-export const basePath = "/data/adb/ReSuSFS";
-export const moduleDirectory = "/data/adb/modules/ReSuSFS";
+export const basePath = "/data/adb/SusAF";
+export const moduleDirectory = "/data/adb/modules/susaf";
 
 /**
  * Fetch a file and return its content as text, with a fallback to `exec cat`.
@@ -114,10 +114,10 @@ export function showPrompt(message, isSuccess = true, duration = 2000, callbackN
 let actionRunning = false, isTerminalOpen = false;
 
 /**
- * Run ReSuSFS.sh with one or more args, streaming output into the shared
+ * Run SusAF.sh with one or more args, streaming output into the shared
  * fake terminal (#action-terminal). Reused by the home page FABs and every
  * "Apply" button on the SuSFS config page.
- * @param {...string} args arguments to pass to ReSuSFS.sh
+ * @param {...string} args arguments to pass to SusAF.sh
  * @returns {void}
  */
 export function runReSuSFS(...args) {
@@ -138,7 +138,7 @@ export function runReSuSFS(...args) {
         actionRunning = true;
         terminalContent.innerHTML = '';
         rebootTerminalBtn.classList.remove('show');
-        const output = spawn("sh", [`${moduleDirectory}/ReSuSFS.sh`, ...args]);
+        const output = spawn("sh", [`${moduleDirectory}/SusAF.sh`, ...args]);
         output.stdout.on('data', (data) => appendOutput(data));
         output.stderr.on('data', (data) => appendOutput(data));
         output.on('exit', () => {
@@ -469,7 +469,7 @@ export function updateUIVisibility(terminalId = null, isOpen = false) {
         // Restore title
         if (config.title) {
             if (config.title === 'footer_home') {
-                titleControl.textContent = 'ReSuSFS ';
+                titleControl.textContent = "Sus'AF ";
             } else {
                 titleControl.textContent = getString(config.title);
             }

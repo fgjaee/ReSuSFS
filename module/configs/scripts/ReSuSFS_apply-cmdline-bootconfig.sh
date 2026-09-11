@@ -11,7 +11,7 @@ else
 	SOURCE_PATH="/proc/cmdline"
 fi
 
-OUTPUT_FILE="/data/adb/ReSuSFS/tmp_cmdline_or_bootconfig.txt"
+OUTPUT_FILE="/data/adb/SusAF/tmp_cmdline_or_bootconfig.txt"
 
 cat "$SOURCE_PATH" > "$OUTPUT_FILE"
 
@@ -25,7 +25,7 @@ else
 	sed -i 's/androidboot.vbmeta.device_state=unlocked/androidboot.vbmeta.device_state=locked/' "$OUTPUT_FILE"
 fi
 
-if ReSuSFS --apply-cmdline-bootconfig "$OUTPUT_FILE"; then
+if SusAF --apply-cmdline-bootconfig "$OUTPUT_FILE"; then
 	echo "[+] cmdline/bootconfig spoof applied successfully
 [*] reboot required/recommended for the spoofed source to be used consistently after boot"
 else

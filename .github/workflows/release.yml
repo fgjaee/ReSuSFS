@@ -1,4 +1,4 @@
-name: Release
+name: Build and release
 permissions:
   contents: write
   actions: write
@@ -6,30 +6,22 @@ permissions:
 on:
   push:
     branches:
-      - master
-      - dev
+      - susaf-dev
+    tags:
+      - 'v*'
     paths:
       - '.github/workflows/release.yml'
       - 'module/**'
       - 'webui/**'
       - 'update.json'
   workflow_dispatch:
-    inputs:
-      force_release:
-        description: 'Force change release file?'
-        required: true
-        type: boolean
-        default: false
 
 env:
-  MODULE_NAME: 'ReSuSFS'
+  MODULE_NAME: 'SusAF'
 
 jobs:
   release:
     runs-on: ubuntu-latest
-    outputs:
-      version_changed: ${{ env.version_changed }}
-      VERSION: ${{ env.VERSION }}
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -51,124 +43,82 @@ jobs:
     - name: build webroot
       run: |
         cd webui
-        pnpm install --frozen-lockfile
+        pnpm install --frozen-lockfile --config.verify-deps-before-run=false
         pnpm build
+
+    - name: Test migration
+      run: ./tests/test-migration.sh
+
+    - name: Validate metadata
+      run: |
+        jq -e . update.json module/common/repo.json >/dev/null
+        test "$(sed -n 's/^id=//p' module/module.prop)" = "susaf"
+        test "$(sed -n 's/^name=//p' module/module.prop)" = "Sus'AF"
+        test "$(sed -n 's/^version=//p' module/module.prop)" = "$(jq -r .version update.json)"
+        test "$(sed -n 's/^versionCode=//p' module/module.prop)" = "$(jq -r .versionCode update.json)"
+
+    - name: Refuse development release
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        VERSION=$(jq -r .version update.json)
+        test "${GITHUB_REF_NAME}" = "${VERSION}" || {
+          echo "Tag ${GITHUB_REF_NAME} does not match update.json version ${VERSION}" >&2
+          exit 1
+        }
+        case "${VERSION}" in
+          *-dev*) echo "Development versions cannot be published" >&2; exit 1 ;;
+        esac
 
     - name: Set variables
       id: setup
       run: |
-        MODULE_DESC="SuSFS for KernelSU"
-        CURRENT_VERSION_CODE=$(jq -r .versionCode update.json)
-        PREVIOUS_VERSION_CODE=$(jq -r .versionCode <(git show HEAD~1:update.json))
         VERSION=$(jq -r .version update.json)
-        PREVIOUS_VERSION=$(jq -r .version <(git show HEAD~1:update.json))
         echo "VERSION=${VERSION}" >> $GITHUB_ENV
-        echo "PREVIOUS_VERSION=${PREVIOUS_VERSION}" >> $GITHUB_ENV
-        COMMIT_ID=$(git rev-parse --short HEAD)
-        ZIP_NAME=${{ env.MODULE_NAME }}_${VERSION}
+        ZIP_NAME=${{ env.MODULE_NAME }}_${VERSION#v}
         echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
 
-        if [ "$CURRENT_VERSION_CODE" -gt "$PREVIOUS_VERSION_CODE" ]; then
-          echo "version_changed=true" >> $GITHUB_ENV
-        else
-          echo "version_changed=false" >> $GITHUB_ENV
-        fi
+    - name: Package module
+      run: |
+        set -euo pipefail
+        mkdir -p dist/package
+        cp -a module/. dist/package/
+        (cd dist/package && zip -qr "../${ZIP_NAME}.zip" .)
+        cp "dist/${ZIP_NAME}.zip" dist/SusAF.zip
+        (cd dist && sha256sum "${ZIP_NAME}.zip" SusAF.zip > SHA256SUMS)
 
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
         name: ${{ env.ZIP_NAME }}
-        path: 'module'
-
-    - name: Download artifact
-      uses: actions/download-artifact@v8
-      with:
-        name: ${{ env.ZIP_NAME }}
-        path: ${{ env.MODULE_NAME }}
-
-    - name: Zip module for release
-      run: |
-        cd ${{ env.MODULE_NAME }}
-        zip -r ../${{ env.ZIP_NAME }}.zip .
-        cd ..
-        cp ${{ env.ZIP_NAME }}.zip ${{ env.MODULE_NAME }}.zip
-
-    - name: Upload to Telegram
-      env:
-        BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-        CHAT_ID: ${{ secrets.CHAT_ID }}
-        TOPIC_ID: ${{ secrets.TOPIC_ID }}
-        COMMIT_MSG: ${{ github.event.head_commit.message }}
-        COMMIT_URL: ${{ github.event.head_commit.url }}
-        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        REPOSITORY: ${{ github.repository }}
-        REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-        RUN_NUMBER: ${{ github.run_number }}
-        ZIP_NAME: ${{ env.ZIP_NAME }}
-      run: |
-        set -euo pipefail
-
-        [[ -n "$BOT_TOKEN" ]] || { echo "::error::TELEGRAM_BOT_TOKEN is not set"; exit 1; }
-        [[ -n "$CHAT_ID" ]] || { echo "::error::TELEGRAM_CHAT_ID is not set"; exit 1; }
-        [[ -n "$TOPIC_ID" ]] || { echo "::error::TELEGRAM_TOPIC_ID is not set"; exit 1; }
-        [[ -f "$ZIP_NAME.zip" ]] || { echo "::error::$ZIP_NAME.zip not found"; exit 1; }
-
-        MSG=$(printf '%s\n' "$COMMIT_MSG" | head -1)
-
-        curl --fail-with-body -sS \
-          -F "chat_id=$CHAT_ID" \
-          -F "message_thread_id=$TOPIC_ID" \
-          -F "document=@$ZIP_NAME.zip" \
-          -F "caption=[*${REPOSITORY//-/\\-}*](${REPO_URL//-/\\-})
-
-        \`\`\`
-        $MSG
-        \`\`\`
-
-          [Commit]($COMMIT_URL) • [CI \#$RUN_NUMBER]($RUN_URL)  " \
-          -F "parse_mode=MarkdownV2" \
-          "https://api.telegram.org/bot$BOT_TOKEN/sendDocument"
+        path: |
+          dist/${{ env.ZIP_NAME }}.zip
+          dist/SusAF.zip
+          dist/SHA256SUMS
 
     - name: Generate changelog
       id: changelog
-      if: env.version_changed == 'true' || inputs.force_release
+      if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
+        FROM_REF=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
         python .github/scripts/generate_changelog.py \
-          --from "${{ env.PREVIOUS_VERSION }}" \
+          --repo-slug "${GITHUB_REPOSITORY}" \
+          --from "${FROM_REF}" \
           --to HEAD \
           --version "${{ env.VERSION }}" \
           --output changelog_body.md
 
-    - name: Update CHANGELOG.md
-      if: env.version_changed == 'true'
-      run: |
-        { echo -e "\n## [${VERSION}] - $(date +%Y-%m-%d)\n"; tail -n +2 changelog_body.md; cat CHANGELOG.md; } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
-
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-
-        git add CHANGELOG.md
-        git commit -m "docs: update CHANGELOG.md for ${VERSION}"
-        git push
-
-    - name: Create new release
-      if: env.version_changed == 'true'
+    - name: Publish release
+      if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v3
       with:
-        files: "*.zip"
+        files: |
+          dist/${{ env.ZIP_NAME }}.zip
+          dist/SusAF.zip
+          dist/SHA256SUMS
         tag_name: "${{ env.VERSION }}"
-        name: "ReSuSFS ${{ env.VERSION }}"
+        name: "Sus'AF ${{ env.VERSION }}"
         body_path: changelog_body.md
         draft: false
-        prerelease: false
-
-    - name: Force update latest release file
-      if: ${{ inputs.force_release }}
-      uses: softprops/action-gh-release@v3
-      with:
-        files: "*.zip"
-        tag_name: "${{ env.VERSION }}"
-        name: "ReSuSFS ${{ env.VERSION }}"
-        body_path: changelog_body.md
+        prerelease: ${{ contains(env.VERSION, '-') }}

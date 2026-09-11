@@ -5,7 +5,7 @@
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
 
-CONF_FILE="/data/adb/ReSuSFS/tmp_uname.txt"
+CONF_FILE="/data/adb/SusAF/tmp_uname.txt"
 
 base_ver=$(cat /proc/version | awk '{print $3}' | grep -oE '^[0-9]+\.[0-9]+\.[0-9]+')
 build_info="#1 SMP PREEMPT $(getprop ro.build.date | tr -s ' ')"
@@ -22,7 +22,7 @@ release=${final_release}
 version=${build_info}
 EOF
 
-if ReSuSFS --apply-uname "$CONF_FILE"; then
+if SusAF --apply-uname "$CONF_FILE"; then
 	echo "[+] uname spoofed successfully"
 	echo "[*] reboot recommended for processes started after boot to consistently observe the spoofed values"
 else

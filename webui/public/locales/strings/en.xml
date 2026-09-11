@@ -119,7 +119,7 @@
     <string name="credits_bindhosts">WebUI built on bindhosts</string>
     <!-- About -->
     <string name="about_title">About</string>
-    <string name="about_open">About ReSuSFS</string>
+    <string name="about_open">About Sus'AF</string>
     <string name="about_author">Author</string>
     <string name="about_license">License</string>
     <string name="about_repo">Repository</string>

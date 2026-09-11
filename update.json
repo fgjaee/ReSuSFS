@@ -1,6 +1,6 @@
 {
-  "version": "v2.3.0-47be13c",
-  "versionCode": 11,
-  "zipUrl": "https://github.com/ahmed-alnassif/ReSuSFS/releases/latest/download/ReSuSFS.zip",
-  "changelog": "https://raw.githubusercontent.com/ahmed-alnassif/ReSuSFS/dev/CHANGELOG.md"
+  "version": "v0.1.0-dev.1",
+  "versionCode": 12,
+  "zipUrl": "https://github.com/fgjaee/ReSuSFS/releases/latest/download/SusAF.zip",
+  "changelog": "https://raw.githubusercontent.com/fgjaee/ReSuSFS/susaf-dev/CHANGELOG.md"
 }
