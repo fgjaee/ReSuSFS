@@ -39,7 +39,7 @@ All optional, all live under `/data/adb/SusAF/`. Missing or empty files mean "no
 | `uname.txt` | spoof kernel release/version |
 | `cmdline_or_bootconfig.txt` | spoof `/proc/cmdline` or `/proc/bootconfig` |
 | `kernel_umount.txt` | extra validated KernelSU kernel-umount targets; auto-discovery uses `source=KSU` and module-backed mount metadata |
-| `config.txt` | toggle kernel flags (mount hiding, logging, avc spoofing) |
+| `config.txt` | kernel flags plus explicit `kernel_umount` and Developer Options/ADB policies |
 | `scripts/` | built-in scripts for spoofing and hiding |
 | `scripts_postfs.txt` | scripts to run at post-fs-data stage |
 | `scripts_bootcompleted.txt` | scripts to run at boot-completed stage |
@@ -60,11 +60,17 @@ Strong hiding is applied out of the box with no configuration needed. Power user
 | `ReSuSFS_apply-uname.sh` | post-fs-data | spoofs kernel version and build info from uname |
 | `ReSuSFS_apply-mount-hiding.sh` | boot-completed | hides module mounts redirected to system paths |
 | `ReSuSFS_apply-props.sh` | boot-completed | spoofs root indicators and removes custom ROM fingerprints |
-| `ReSuSFS_apply-settings.sh` | boot-completed | spoofs developer options and debugging states in system settings |
-| `ReSuSFS_apply-sus-maps.sh` | boot-completed | hides zygisk libraries and module font files from memory maps |
-| `ReSuSFS_apply-sus-paths-loop.sh` | boot-completed | hides recovery traces, root tools, and suspicious pty nodes |
+| `ReSuSFS_apply-settings.sh` | boot-completed | applies the explicit Developer Options/ADB mode; defaults to unchanged |
+| `ReSuSFS_apply-sus-maps.sh` | boot-completed | applies exact `sus_maps.txt` targets; no blanket `.so` or font scan |
+| `ReSuSFS_apply-sus-paths-loop.sh` | boot-completed | hides selected recovery/root-tool paths; PTY nodes are explicit-only |
 | `ReSuSFS_apply-sus-paths.sh` | boot-completed | hides custom ROM traces and addon.d paths |
 | `ReSuSFS_cleanup-markers.sh` | boot-completed | removes susfs leftover markers from shared storage |
+
+`ADB_MODE=unchanged` is the safe default. `spoof-off` refuses without changing
+the working transport because this stack cannot currently spoof Settings
+provider reads safely. `actually-disable` requires
+`ADB_DISABLE_CONFIRM=disable-adb`, then verifies that all three settings are
+off and `adbd` has stopped.
 
 ## WebUI Features
 

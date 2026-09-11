@@ -1,11 +1,13 @@
 #!/system/bin/sh
 #title=Hide paths loop
 #author=ahmed-alnassif
-#desc=Hides recovery traces, root tools, and suspicious pty nodes
+#desc=Hides selected recovery and root-tool paths; PTYs are explicit-only
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
+PERSISTENT_DIR="${SUSAF_PERSISTENT_DIR:-/data/adb/SusAF}"
+SUSAF_COMMAND="${SUSAF_CLI_COMMAND:-SusAF}"
 
-LIST_FILE="/data/adb/SusAF/tmp_sus_paths_loop.txt"
+LIST_FILE="$PERSISTENT_DIR/tmp_sus_paths_loop.txt"
 
 : > "$LIST_FILE"
 
@@ -37,12 +39,8 @@ for path in \
 	echo "$path" >> "$LIST_FILE"
 done
 
-for pty in /dev/pts/*; do
-	[ -e "$pty" ] && echo "$pty" >> "$LIST_FILE"
-done
-
 if [ -s "$LIST_FILE" ]; then
-	if SusAF --apply-sus-paths-loop "$LIST_FILE"; then
+	if "$SUSAF_COMMAND" --apply-sus-paths-loop "$LIST_FILE"; then
 		echo "[+] path hiding applied successfully
 [*] reboot recommended for persistent hiding across boot"
 	else

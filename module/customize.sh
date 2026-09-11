@@ -40,6 +40,11 @@ migrate_legacy_configs || {
 mkdir -p "$PERSISTENT_DIR" || exit 1
 chmod 700 "$PERSISTENT_DIR" 2>/dev/null
 
+refresh_unsafe_legacy_builtins "$CONFIG_DIR/scripts" || {
+	ui_print "[!] Could not safely refresh inherited ADB/PTY/SUS_MAP built-ins. Installation stopped."
+	exit 1
+}
+
 handle_files() {
 	src_dir="$1"
 	dst_dir="$2"

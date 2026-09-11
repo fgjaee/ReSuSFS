@@ -321,6 +321,33 @@ migrate_legacy_configs() {
 	return "$result"
 }
 
+_refresh_unsafe_builtin() {
+	local templates_dir="$1"
+	local name="$2"
+	local signature="$3"
+	local installed="$PERSISTENT_DIR/scripts/$name"
+	local template="$templates_dir/$name"
+	local backup
+
+	[ -f "$installed" ] && [ ! -L "$installed" ] || return 0
+	[ -f "$template" ] && [ ! -L "$template" ] || return 0
+	grep -Fq "$signature" "$installed" 2>/dev/null || return 0
+	_ensure_migration_layout || return 1
+	backup="$MIGRATION_RUN_DIR/review/replaced-builtins/$name"
+	[ ! -e "$backup" ] || backup="$backup.$$"
+	_copy_regular_file "$installed" "$backup" "$MIGRATION_MAX_SCRIPT_BYTES" || return 1
+	cp "$template" "$installed" || return 1
+	chmod 755 "$installed" 2>/dev/null
+	_migration_note "[+] Replaced unsafe inherited built-in: $name (previous copy saved for review)"
+}
+
+refresh_unsafe_legacy_builtins() {
+	local templates_dir="$1"
+	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-settings.sh 'settings put global adb_enabled 0' || return 1
+	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-sus-paths-loop.sh 'for pty in /dev/pts/*' || return 1
+	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-sus-maps.sh 'find /data/adb/modules -name "*.so"' || return 1
+}
+
 disable_legacy_resusfs_module() {
 	[ -d "$LEGACY_MODULE_DIR" ] && [ ! -L "$LEGACY_MODULE_DIR" ] || return 0
 	[ "$LEGACY_MODULE_DIR" != "$MODULE_DIR" ] || return 0

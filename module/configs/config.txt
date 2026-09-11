@@ -28,3 +28,14 @@ KERNEL_UMOUNT_MODE=enabled
 # module-backed root/source/overlay data. Explicit entries remain available in
 # kernel_umount.txt. The global KernelSU umount list is never wiped.
 AUTO_KERNEL_UMOUNT=1
+
+# Developer Options / ADB handling:
+#   unchanged        = never touch settings, USB properties, or adbd (default)
+#   spoof-off        = refuse safely until the active stack can spoof Settings
+#                      provider reads without changing the real ADB transport
+#   actually-disable = write all three settings to 0 and stop/verify adbd
+ADB_MODE=unchanged
+
+# Required only for ADB_MODE=actually-disable. This explicit token prevents a
+# restored or mistyped config from silently cutting off debugging access.
+ADB_DISABLE_CONFIRM=

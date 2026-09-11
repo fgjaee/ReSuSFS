@@ -42,3 +42,7 @@
 #
 # paths outside /sdcard work too:
 # /data/local/tmp/main.jar
+#
+# PTYs are never auto-discovered. If a specific node genuinely needs hiding,
+# add that exact path after checking it will not break your shell, for example:
+# /dev/pts/7

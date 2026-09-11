@@ -1,19 +1,20 @@
 #!/system/bin/sh
-#title=Spoof settings
+#title=Developer options / ADB mode
 #author=ahmed-alnassif
-#desc=Spoofs developer options, debugging states, and SELinux status
+#desc=Leaves ADB unchanged by default; disabling requires explicit confirmation
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
+MODULE_DIR="${SUSAF_MODULE_DIR:-/data/adb/modules/susaf}"
+PERSISTENT_DIR="${SUSAF_PERSISTENT_DIR:-/data/adb/SusAF}"
 
-settings put global development_settings_enabled 0
-settings put global adb_enabled 0
-settings put global adb_wifi_enabled 0
-settings put global package_verifier_enable 1
-settings put global verifier_verify_adb_installs 1
-settings put global hidden_api_policy 0
-settings put global usb_mass_storage_enabled 0
+. "$MODULE_DIR/lib/adb-mode.sh" || {
+	echo "[-] ADB mode library not found"
+	exit 1
+}
 
-[ "$(getenforce)" != "Enforcing" ] && setenforce 1
-
-echo "[+] settings spoofed successfully"
-echo "[*] no reboot required"
+if apply_adb_mode "$PERSISTENT_DIR/config.txt"; then
+	echo "[+] Developer options / ADB mode applied"
+else
+	echo "[-] Developer options / ADB mode was not applied; see state/adb_mode.report.txt"
+	exit 1
+fi

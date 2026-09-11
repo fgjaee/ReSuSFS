@@ -1,31 +1,15 @@
 #!/system/bin/sh
 #title=Hide maps
 #author=ahmed-alnassif
-#desc=Hides zygisk libraries and module font files from memory maps
+#desc=Applies only the exact SUS_MAP targets listed in sus_maps.txt
 
 PATH=/data/adb/ksu/bin:/data/data/com.termux/files/usr/bin:$PATH
+SUSAF_COMMAND="${SUSAF_CLI_COMMAND:-SusAF}"
 
-LIST_FILE="/data/adb/SusAF/tmp_sus_maps.txt"
-
-: > "$LIST_FILE"
-
-find /data/adb/modules -name "*.so" 2>/dev/null >> "$LIST_FILE"
-
-find /data/adb/modules -type f \( -name "*.ttf" -o -name "*.otf" -o -name "*.ttc" \) 2>/dev/null >> "$LIST_FILE"
-
-sort -u "$LIST_FILE" -o "$LIST_FILE"
-
-if [ -s "$LIST_FILE" ]; then
-	if SusAF --apply-sus-maps "$LIST_FILE"; then
-		echo "[+] map hiding applied successfully"
-		echo "[*] reboot recommended for changes to take full effect"
-	else
-		echo "[-] map hiding apply failed"
-		echo "[*] no reboot required"
-	fi
+if "$SUSAF_COMMAND" --apply-sus-maps; then
+	echo "[+] targeted map hiding applied successfully"
+	echo "[*] only explicit sus_maps.txt entries were used"
 else
-	echo "[*] no paths found to hide"
-	echo "[*] nothing applied"
+	echo "[-] targeted map hiding apply failed"
+	exit 1
 fi
-
-rm -f "$LIST_FILE"

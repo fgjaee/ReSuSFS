@@ -16,6 +16,9 @@
 # hide a zygisk module's native lib:
 # /data/adb/modules/some_module/zygisk/arm64-v8a.so
 #
+# Sus'AF never scans every module .so. Add only the exact loaded library you
+# intend to hide, after confirming its path and mount-namespace device number.
+#
 # hide font-module map traces:
 # /system/fonts/Roboto-Regular.ttf
 # /system/fonts/RobotoStatic-Regular.ttf
