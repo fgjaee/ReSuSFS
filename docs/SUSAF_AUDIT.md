@@ -278,8 +278,8 @@ hardcodes the old persistent directory is reported for manual review.
 
 ## Implementation slices
 
-Slices 1 through 7 are implemented on `susaf-dev`. Release hardening remains
-the final release blocker.
+Slices 1 through 8 are implemented on `susaf-dev`. The automated release gates
+are in place; the device smoke checklist must pass before the first stable tag.
 
 1. **Identity and migration foundation**
    - external Sus'AF identity, dynamic module paths, compatibility CLI

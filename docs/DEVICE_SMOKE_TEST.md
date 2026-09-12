@@ -1,0 +1,88 @@
+# Sus'AF device smoke test
+
+Complete this checklist on a supported arm64 test device before creating the
+first non-development tag. Record the device, Android build, kernel, root
+manager, SuSFS version, tester, date, and result for every section.
+
+## Recovery preparation
+
+- Confirm a current device backup and a known way to enter KernelSU safe mode.
+- Keep a working computer-side ADB session available.
+- Save the current module list and `/data/adb/ReSuSFS`, `/data/adb/susfs4ksu`,
+  and `/data/adb/SusAF` configuration directories when present.
+- Verify the release ZIP against `SHA256SUMS` before installation.
+
+## Fresh installation and identity
+
+- Install on a device without an existing Sus'AF persistent directory.
+- Confirm the module manager shows `Sus'AF` with module ID `susaf`.
+- Confirm persistent configuration is created at `/data/adb/SusAF` with private
+  directory/file permissions.
+- Confirm both `SusAF` and the `ReSuSFS` compatibility command work.
+- Reboot twice and confirm there is no bootloop, SystemUI crash, or repeated
+  service process.
+
+## Legacy migration
+
+- Repeat from a snapshot containing useful `/data/adb/ReSuSFS` and
+  `/data/adb/susfs4ksu` configuration.
+- Confirm source directories remain untouched and an idempotent migration
+  marker and review snapshot are created.
+- Compare the Max Saturation UserHub script byte-for-byte before and after.
+- Confirm its original post-fs-data, boot-completed, or cron schedule remains
+  unchanged; no script moves to another stage.
+- Confirm conflicts preserve the existing Sus'AF value and are placed in the
+  migration review area.
+
+## Boot state and uname
+
+- Confirm generated bootconfig/cmdline state contains only the current value
+  for each managed key after two boots.
+- Confirm `androidboot.verifiedbooterror` and `androidboot.verifyerrorpart` are
+  absent from the generated state.
+- Compare effective uname release/version with the expected existing ReSuSFS
+  behavior, then test one explicit custom uname and restore the default.
+
+## Kernel umount and hiding
+
+- Record whether `ksud feature check kernel_umount` is supported.
+- With mode `unchanged`, confirm Sus'AF does not change the feature.
+- With mode `enabled`, confirm only validated KSU/module-backed mountpoints and
+  explicit entries are registered, followed by module-mounted notification.
+- Confirm unsupported kernels degrade visibly without blocking boot.
+- Confirm no blanket `/dev/pts/*` enumeration occurs.
+- Confirm SUS_MAP applies only explicit `sus_maps.txt` targets and never every
+  module `.so` or font.
+
+## Developer Options and ADB
+
+- In `unchanged`, confirm Developer Options, USB debugging, wireless debugging,
+  USB functions, and `adbd` remain unchanged.
+- In `spoof-off`, confirm the mode either preserves working ADB while hiding a
+  supported indicator or refuses clearly; it must never claim a false success.
+- Test `actually-disable` only with independent recovery access. Confirm the
+  WebUI requires explicit confirmation and `adbd` actually stops.
+- Return to `unchanged` and restore the intended debugging state.
+
+## Diagnostics, update, and restore
+
+- Confirm the Diagnostics page loads offline, refreshes on demand, exports a
+  text report, and contains no configured target paths or script bodies.
+- Run `SusAF --force-update`; verify the pinned source commit, expected and
+  installed SHA-256, compatibility probe, backup, and result in Diagnostics.
+- Run it again and confirm `already-current` without a second download.
+- Export configuration, inspect the archive manifest, restore it, and confirm
+  collision backups are retained under `/data/adb/SusAF/restore`.
+- Confirm restored Max Saturation and another custom UserHub script are
+  byte-identical and retain their schedules after reboot.
+- Try an archive with an unknown member and a symlink on the test device;
+  confirm restore refuses it without changing live configuration.
+
+## Release gate
+
+- Confirm the GitHub build job passes and its two independently built ZIPs are
+  byte-identical before the duplicate is discarded.
+- Install the exact `SusAF.zip` artifact produced by that run, not a locally
+  repacked copy.
+- Mark the candidate releasable only when every applicable check above passes
+  and all deviations have an issue or an explicit documented waiver.

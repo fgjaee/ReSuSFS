@@ -1,7 +1,4 @@
 name: Build and release
-permissions:
-  contents: write
-  actions: write
 
 on:
   push:
@@ -10,63 +7,104 @@ on:
     tags:
       - 'v*'
     paths:
+      - '.github/scripts/**'
       - '.github/workflows/release.yml'
+      - '.node-version'
       - 'module/**'
+      - 'tests/**'
       - 'webui/**'
       - 'update.json'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   MODULE_NAME: 'SusAF'
+  PNPM_VERSION: '11.22.0'
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.setup.outputs.version }}
+      zip_name: ${{ steps.setup.outputs.zip_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
+        persist-credentials: false
 
     - name: Setup pnpm
       uses: pnpm/action-setup@v6
       with:
-        version: 'latest'
+        version: ${{ env.PNPM_VERSION }}
 
     - name: Setup Node
       uses: actions/setup-node@v7
       with:
-        node-version: 'lts/*'
+        node-version-file: '.node-version'
         cache: 'pnpm'
         cache-dependency-path: webui/pnpm-lock.yaml
 
-    - name: build webroot
+    - name: Lint and build WebUI
       run: |
+        set -euo pipefail
         cd webui
         pnpm install --frozen-lockfile --config.verify-deps-before-run=false
+        pnpm lint
         pnpm build
+
+    - name: Static safety checks
+      run: |
+        set -euo pipefail
+        while IFS= read -r -d '' shell_file; do
+          bash -n "$shell_file"
+        done < <(find module tests .github/scripts -type f -name '*.sh' -print0)
+        if grep -R -n -- '--no-check-certificate' module; then
+          echo 'TLS verification bypass found' >&2
+          exit 1
+        fi
+        if grep -R -E -n '/(main|master|universal-binary)/ksu_susfs_arm64' module; then
+          echo 'Moving-branch SuSFS binary URL found' >&2
+          exit 1
+        fi
+        if grep -R -E -n 'tar[[:space:]]+x[z]?f' webui; then
+          echo 'WebUI must not extract archives directly' >&2
+          exit 1
+        fi
+        if grep -R -E -i -n 'paypal|patreon|buymeacoffee|ko-fi|github.com/sponsors' README.md module webui/page webui/utils; then
+          echo 'Donation or sponsorship link found in the module surface' >&2
+          exit 1
+        fi
+        test ! -e .github/FUNDING.yml
 
     - name: Test module scripts
       run: |
-        ./tests/test-migration.sh
-        ./tests/test-boot-state.sh
-        ./tests/test-kernel-umount.sh
-        ./tests/test-safer-defaults.sh
-        ./tests/test-diagnostics.sh
-        ./tests/test-secure-updater.sh
-        ./tests/test-safe-restore.sh
+        set -euo pipefail
+        for test_script in tests/test-*.sh; do
+          "$test_script"
+        done
 
     - name: Validate metadata
       run: |
+        set -euo pipefail
         jq -e . update.json module/common/repo.json >/dev/null
         test "$(sed -n 's/^id=//p' module/module.prop)" = "susaf"
         test "$(sed -n 's/^name=//p' module/module.prop)" = "Sus'AF"
         test "$(sed -n 's/^version=//p' module/module.prop)" = "$(jq -r .version update.json)"
         test "$(sed -n 's/^versionCode=//p' module/module.prop)" = "$(jq -r .versionCode update.json)"
+        grep -Eq '^source_commit=[0-9a-f]{40}$' module/update-manifest.properties
+        grep -Eq '^sha256=[0-9a-f]{64}$' module/update-manifest.properties
+        for metadata_file in update.json module/module.prop module/common/repo.json; do
+          grep -Fq 'fgjaee/ReSuSFS' "$metadata_file"
+        done
 
     - name: Refuse development release
       if: startsWith(github.ref, 'refs/tags/')
       run: |
+        set -euo pipefail
         VERSION=$(jq -r .version update.json)
         test "${GITHUB_REF_NAME}" = "${VERSION}" || {
           echo "Tag ${GITHUB_REF_NAME} does not match update.json version ${VERSION}" >&2
@@ -79,53 +117,96 @@ jobs:
     - name: Set variables
       id: setup
       run: |
+        set -euo pipefail
         VERSION=$(jq -r .version update.json)
-        echo "VERSION=${VERSION}" >> $GITHUB_ENV
-        ZIP_NAME=${{ env.MODULE_NAME }}_${VERSION#v}
-        echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+        ZIP_NAME="${MODULE_NAME}_${VERSION#v}"
+        echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+        echo "ZIP_NAME=${ZIP_NAME}" >> "$GITHUB_ENV"
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+        echo "zip_name=${ZIP_NAME}" >> "$GITHUB_OUTPUT"
 
-    - name: Package module
+    - name: Build reproducible module archives
       run: |
         set -euo pipefail
-        mkdir -p dist/package
-        cp -a module/. dist/package/
-        (cd dist/package && zip -qr "../${ZIP_NAME}.zip" .)
+        SOURCE_DATE_EPOCH=$(git show -s --format=%ct HEAD)
+        export SOURCE_DATE_EPOCH
+        mkdir -p dist
+        .github/scripts/package_module.sh module "dist/${ZIP_NAME}.zip"
+        .github/scripts/package_module.sh module "dist/${ZIP_NAME}.repro.zip"
+        cmp "dist/${ZIP_NAME}.zip" "dist/${ZIP_NAME}.repro.zip"
         cp "dist/${ZIP_NAME}.zip" dist/SusAF.zip
-        (cd dist && sha256sum "${ZIP_NAME}.zip" SusAF.zip > SHA256SUMS)
+        rm "dist/${ZIP_NAME}.repro.zip"
+        (
+          cd dist
+          sha256sum "${ZIP_NAME}.zip" SusAF.zip > SHA256SUMS
+          sha256sum -c SHA256SUMS
+        )
+        unzip -t "dist/${ZIP_NAME}.zip"
+        unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx 'id=susaf'
+        unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx "name=Sus'AF"
+        unzip -p "dist/${ZIP_NAME}.zip" update-manifest.properties \
+          | grep -Eq '^source_commit=[0-9a-f]{40}$'
+        unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -Fqx 'webroot/index.html'
+        if unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -E '(^/|(^|/)\.\.(/|$)|(^|/)(\.git|node_modules)(/|$))'; then
+          echo 'Unsafe or development-only archive path found' >&2
+          exit 1
+        fi
 
-    - name: Upload artifact
+    - name: Upload verified artifacts
       uses: actions/upload-artifact@v7
       with:
-        name: ${{ env.ZIP_NAME }}
+        name: ${{ steps.setup.outputs.zip_name }}
+        if-no-files-found: error
         path: |
-          dist/${{ env.ZIP_NAME }}.zip
+          dist/${{ steps.setup.outputs.zip_name }}.zip
           dist/SusAF.zip
           dist/SHA256SUMS
 
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+    - name: Checkout changelog history
+      uses: actions/checkout@v7
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+
+    - name: Download verified artifacts
+      uses: actions/download-artifact@v7
+      with:
+        name: ${{ needs.build.outputs.zip_name }}
+        path: dist
+
     - name: Generate changelog
-      id: changelog
-      if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        FROM_REF=$(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)
+        set -euo pipefail
+        FROM_REF=$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || git rev-list --max-parents=0 HEAD)
         python .github/scripts/generate_changelog.py \
           --repo-slug "${GITHUB_REPOSITORY}" \
           --from "${FROM_REF}" \
           --to HEAD \
-          --version "${{ env.VERSION }}" \
+          --version "${{ needs.build.outputs.version }}" \
           --output changelog_body.md
 
     - name: Publish release
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v3
-      with:
-        files: |
-          dist/${{ env.ZIP_NAME }}.zip
-          dist/SusAF.zip
-          dist/SHA256SUMS
-        tag_name: "${{ env.VERSION }}"
-        name: "Sus'AF ${{ env.VERSION }}"
-        body_path: changelog_body.md
-        draft: false
-        prerelease: ${{ contains(env.VERSION, '-') }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.build.outputs.version }}
+        ZIP_NAME: ${{ needs.build.outputs.zip_name }}
+      run: |
+        set -euo pipefail
+        PRERELEASE_FLAG=''
+        case "$VERSION" in *-*) PRERELEASE_FLAG='--prerelease' ;; esac
+        gh release create "$VERSION" \
+          "dist/${ZIP_NAME}.zip" \
+          "dist/SusAF.zip" \
+          "dist/SHA256SUMS" \
+          --title "Sus'AF ${VERSION}" \
+          --notes-file changelog_body.md \
+          $PRERELEASE_FLAG
