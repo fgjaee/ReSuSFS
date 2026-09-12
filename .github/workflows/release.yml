@@ -78,6 +78,18 @@ jobs:
           echo 'Donation or sponsorship link found in the module surface' >&2
           exit 1
         fi
+        if grep -E -i -n 'KernelSU Next (is|is currently).*not recommended|Do not use KernelSU Next|anti-competitive behavior' README.md CHANGELOG.md; then
+          echo 'Project-dispute language found in the public documentation' >&2
+          exit 1
+        fi
+        if find module/configs/scripts -maxdepth 1 -type f -name 'ReSuSFS_*.sh' | grep -q .; then
+          echo 'Legacy-branded packaged built-in found' >&2
+          exit 1
+        fi
+        if grep -E -n 'VOLUME (UP|DOWN)|getevent|detect_key_press' module/customize.sh; then
+          echo 'Timed installer prompt found' >&2
+          exit 1
+        fi
         test ! -e .github/FUNDING.yml
 
     - name: Test module scripts
@@ -92,7 +104,7 @@ jobs:
         set -euo pipefail
         jq -e . update.json module/common/repo.json >/dev/null
         test "$(sed -n 's/^id=//p' module/module.prop)" = "susaf"
-        test "$(sed -n 's/^name=//p' module/module.prop)" = "Sus'AF"
+        test "$(sed -n 's/^name=//p' module/module.prop)" = "Sus’AF"
         test "$(sed -n 's/^version=//p' module/module.prop)" = "$(jq -r .version update.json)"
         test "$(sed -n 's/^versionCode=//p' module/module.prop)" = "$(jq -r .versionCode update.json)"
         grep -Eq '^source_commit=[0-9a-f]{40}$' module/update-manifest.properties
@@ -143,7 +155,7 @@ jobs:
         )
         unzip -t "dist/${ZIP_NAME}.zip"
         unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx 'id=susaf'
-        unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx "name=Sus'AF"
+        unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx "name=Sus’AF"
         unzip -p "dist/${ZIP_NAME}.zip" update-manifest.properties \
           | grep -Eq '^source_commit=[0-9a-f]{40}$'
         unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -Fqx 'webroot/index.html'

@@ -1,4 +1,4 @@
-ReSuSFS_apply-cmdline-bootconfig.sh
-ReSuSFS_apply-kstat-add.sh
-ReSuSFS_apply-ksu-settings.sh
-ReSuSFS_apply-uname.sh
+SusAF_apply-cmdline-bootconfig.sh
+SusAF_apply-kstat-add.sh
+SusAF_apply-ksu-settings.sh
+SusAF_apply-uname.sh

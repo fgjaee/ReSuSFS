@@ -1,5 +1,5 @@
 import { exec } from 'kernelsu-alt';
-import { showPrompt, basePath, moduleDirectory, runReSuSFS, updateUIVisibility } from '../../utils/util.js';
+import { showPrompt, basePath, moduleDirectory, runSusAF, updateUIVisibility } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
 import { openEditor } from '../../utils/editor.js';
 import { FileSelector } from '../../utils/file_selector.js';
@@ -398,7 +398,7 @@ function buildScriptBox(script, postfsState, bootcompletedState, cronExpr) {
 
     el.querySelector('.script-edit-btn').onclick = () => openScriptEditor(name);
     el.querySelector('.script-tags-btn').onclick = () => openTagEditor(script);
-    el.querySelector('.script-run-btn').onclick = () => runReSuSFS('--run-script', `${scriptsDir}/${name}`);
+    el.querySelector('.script-run-btn').onclick = () => runSusAF('--run-script', `${scriptsDir}/${name}`);
     el.querySelector('.script-delete-btn').onclick = () => deleteScript(name);
 
     const cronTypeSelect = el.querySelector('.cron-type-select');
@@ -641,9 +641,9 @@ async function openScriptEditor(name) {
 
     openEditor(name, content, async (newContent) => {
         const command = `
-            cat << 'ReSuSFSScriptEOF' > ${path}
+            cat << 'SusAFScriptEOF' > ${path}
 ${newContent.trim()}
-ReSuSFSScriptEOF
+SusAFScriptEOF
             chmod 755 ${path}`;
         const saveResult = await exec(command);
         if (saveResult.errno === 0) {

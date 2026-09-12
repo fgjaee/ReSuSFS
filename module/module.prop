@@ -1,7 +1,7 @@
 id=susaf
-name=Sus'AF
-version=v0.1.0-dev.1
-versionCode=12
-author=fgjaee; based on ReSuSFS by ahmed-alnassif
+name=Sus’AF
+version=v0.1.0-dev.2
+versionCode=13
+author=fgjaee
 updateJson=https://raw.githubusercontent.com/fgjaee/ReSuSFS/susaf-dev/update.json
-description=SusFS and KernelSU controls with a preserved ReSuSFS WebUI and UserHub. Development build; not ready for daily-driver release.
+description=SusFS and KernelSU controls with the Sus'AF WebUI, UserHub, targeted hiding, diagnostics, and safe migration. Development build.

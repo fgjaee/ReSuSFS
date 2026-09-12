@@ -160,6 +160,6 @@ grep -Fqx 'result=invalid-manifest' "$SUSAF_UPDATER_REPORT"
 ! grep -Eq '/(main|master|universal-binary)/ksu_susfs_arm64' "$MODULE_DIR/utils.sh" "$MODULE_DIR/update-manifest.properties"
 grep -Fqx 'source_commit=26958b7c3dca487c17227b62a6dd7cf11645b49a' "$MODULE_DIR/update-manifest.properties"
 grep -Fqx 'sha256=8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa' "$MODULE_DIR/update-manifest.properties"
-grep -Fq -- '--force-update)' "$MODULE_DIR/ReSuSFS.sh"
+grep -Fq -- '--force-update)' "$MODULE_DIR/SusAF.sh"
 
 echo "secure-updater tests passed"

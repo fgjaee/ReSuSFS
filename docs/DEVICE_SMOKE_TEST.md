@@ -26,8 +26,9 @@ manager, SuSFS version, tester, date, and result for every section.
 
 - Repeat from a snapshot containing useful `/data/adb/ReSuSFS` and
   `/data/adb/susfs4ksu` configuration.
-- Confirm source directories remain untouched and an idempotent migration
-  marker and review snapshot are created.
+- Confirm migration markers and review snapshots are created, then confirm the
+  old top-level directories are gone and their intact contents are recoverable
+  under `/data/adb/SusAF/migration/legacy-sources/`.
 - Compare the Max Saturation UserHub script byte-for-byte before and after.
 - Confirm its original post-fs-data, boot-completed, or cron schedule remains
   unchanged; no script moves to another stage.

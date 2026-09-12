@@ -1,5 +1,5 @@
 import { exec } from 'kernelsu-alt';
-import { showPrompt, basePath, filePaths, applyFlags, runReSuSFS, fetchText, updateUIVisibility } from '../../utils/util.js';
+import { showPrompt, basePath, filePaths, applyFlags, runSusAF, fetchText, updateUIVisibility } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
 import { openEditor } from '../../utils/editor.js';
 import { FileSelector } from '../../utils/file_selector.js';
@@ -120,7 +120,7 @@ async function refreshBadges() {
 function setupBoxActions() {
     CONFIG_BOXES.forEach(box => {
         document.getElementById(`edit-${box.key}`).onclick = () => openConfigEditor(box.key);
-        document.getElementById(`apply-${box.key}`).onclick = () => runReSuSFS(applyFlags[box.key]);
+        document.getElementById(`apply-${box.key}`).onclick = () => runSusAF(applyFlags[box.key]);
         document.getElementById(`custom-${box.key}`).onclick = () => applyCustomFile(box.key);
     });
 }
@@ -134,7 +134,7 @@ function setupBoxActions() {
 async function applyCustomFile(key) {
     const path = await FileSelector.getFilePath('txt');
     if (!path) return;
-    runReSuSFS(applyFlags[key], path);
+    runSusAF(applyFlags[key], path);
 }
 
 // Toggles box
@@ -188,7 +188,7 @@ function setupToggles() {
     });
     document.getElementById('apply-toggles').onclick = async () => {
         await saveToggles();
-        runReSuSFS('--apply-toggles', 'early');
+        runSusAF('--apply-toggles', 'early');
     };
 }
 
@@ -198,9 +198,9 @@ async function openConfigEditor(key) {
 
     openEditor(fileName, content, async (newContent) => {
         const command = `
-            cat << 'ReSuSFSEditorEOF' > ${basePath}/${fileName}
+            cat << 'SusAFEditorEOF' > ${basePath}/${fileName}
 ${newContent.trim()}
-ReSuSFSEditorEOF
+SusAFEditorEOF
             chmod 644 ${basePath}/${fileName}`;
         const result = await exec(command);
         if (result.errno === 0) {
@@ -237,8 +237,8 @@ export function onShow() {
     restoreFabIcons();
     const actionBtn = document.getElementById('action-btn');
     const forceUpdateButton = document.getElementById('force-update-btn');
-    actionBtn.onclick = () => runReSuSFS('--action');
-    forceUpdateButton.onclick = () => runReSuSFS('--force-update');
+    actionBtn.onclick = () => runSusAF('--action');
+    forceUpdateButton.onclick = () => runSusAF('--force-update');
     refreshBadges();
     loadToggles();
 }

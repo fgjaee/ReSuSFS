@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Safe, idempotent migration into /data/adb/SusAF. Legacy sources are read
-# only. Unsupported data is snapshotted for review instead of being executed.
+# during import, then recoverably moved under SusAF after verification.
 
 MIGRATION_SCHEMA=1
 MIGRATION_MAX_CONFIG_BYTES=4194304
@@ -199,7 +199,7 @@ migrate_resusfs_config() {
 	MIGRATION_SOURCE="$LEGACY_RESUSFS_DIR"
 	MIGRATION_ERROR_FILE="$PERSISTENT_DIR/state/migrations/.resusfs-error.$$"
 	rm -f "$MIGRATION_ERROR_FILE"
-	_migration_note "[*] Migrating legacy ReSuSFS configuration (source remains untouched)"
+	_migration_note "[*] Migrating legacy ReSuSFS configuration"
 
 	for rel in sus_paths.txt sus_paths_loop.txt sus_maps.txt kstat_paths.txt open_redirect.txt scripts_postfs.txt scripts_bootcompleted.txt scripts_cron.txt; do
 		[ -f "$MIGRATION_SOURCE/$rel" ] && [ ! -L "$MIGRATION_SOURCE/$rel" ] || continue
@@ -283,7 +283,7 @@ migrate_susfs4ksu_config() {
 	MIGRATION_SOURCE="$LEGACY_SUSFS4KSU_DIR"
 	MIGRATION_ERROR_FILE="$PERSISTENT_DIR/state/migrations/.susfs4ksu-error.$$"
 	rm -f "$MIGRATION_ERROR_FILE"
-	_migration_note "[*] Migrating understood susfs4ksu configuration (source remains untouched)"
+	_migration_note "[*] Migrating understood susfs4ksu configuration"
 
 	for rel in sus_path.txt sus_path_loop.txt sus_maps.txt try_umount.txt legit_mounts.txt sus_mount.txt sus_open_redirect.txt sus_kstat_statically.json config.sh; do
 		[ -f "$MIGRATION_SOURCE/$rel" ] && [ ! -L "$MIGRATION_SOURCE/$rel" ] || continue
@@ -321,31 +321,64 @@ migrate_legacy_configs() {
 	return "$result"
 }
 
-_refresh_unsafe_builtin() {
-	local templates_dir="$1"
-	local name="$2"
-	local signature="$3"
-	local installed="$PERSISTENT_DIR/scripts/$name"
-	local template="$templates_dir/$name"
-	local backup
-
-	[ -f "$installed" ] && [ ! -L "$installed" ] || return 0
-	[ -f "$template" ] && [ ! -L "$template" ] || return 0
-	grep -Fq "$signature" "$installed" 2>/dev/null || return 0
+repair_legacy_schedule_entries() {
+	local rel result
+	result=0
+	[ -d "$LEGACY_RESUSFS_DIR" ] && [ ! -L "$LEGACY_RESUSFS_DIR" ] || return 0
 	_ensure_migration_layout || return 1
-	backup="$MIGRATION_RUN_DIR/review/replaced-builtins/$name"
-	[ ! -e "$backup" ] || backup="$backup.$$"
-	_copy_regular_file "$installed" "$backup" "$MIGRATION_MAX_SCRIPT_BYTES" || return 1
-	cp "$template" "$installed" || return 1
-	chmod 755 "$installed" 2>/dev/null
-	_migration_note "[+] Replaced unsafe inherited built-in: $name (previous copy saved for review)"
+	MIGRATION_SOURCE="$LEGACY_RESUSFS_DIR"
+	MIGRATION_ERROR_FILE="$PERSISTENT_DIR/state/migrations/.schedule-repair-error.$$"
+	rm -f "$MIGRATION_ERROR_FILE"
+	for rel in scripts_postfs.txt scripts_bootcompleted.txt scripts_cron.txt; do
+		[ -f "$MIGRATION_SOURCE/$rel" ] && [ ! -L "$MIGRATION_SOURCE/$rel" ] || continue
+		_merge_unique_file "ReSuSFS" "$rel" 600 || result=1
+	done
+	if [ -e "$MIGRATION_ERROR_FILE" ]; then
+		rm -f "$MIGRATION_ERROR_FILE"
+		result=1
+	fi
+	[ "$result" -eq 0 ] && _migration_note "[+] Preserved legacy UserHub stage assignments"
+	return "$result"
 }
 
-refresh_unsafe_legacy_builtins() {
-	local templates_dir="$1"
-	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-settings.sh 'settings put global adb_enabled 0' || return 1
-	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-sus-paths-loop.sh 'for pty in /dev/pts/*' || return 1
-	_refresh_unsafe_builtin "$templates_dir" ReSuSFS_apply-sus-maps.sh 'find /data/adb/modules -name "*.so"' || return 1
+_archive_legacy_source() {
+	local label="$1"
+	local source="$2"
+	local marker="$3"
+	local archive_root stamp destination record
+
+	[ -d "$source" ] && [ ! -L "$source" ] || return 0
+	[ -f "$marker" ] && [ ! -L "$marker" ] || {
+		_migration_fail "Refusing to archive $label before a completed migration marker exists"
+		return 1
+	}
+	case "$source" in
+		"$PERSISTENT_DIR"|"$PERSISTENT_DIR"/*)
+			_migration_fail "Refusing to archive SusAF's active data directory: $source"
+			return 1
+			;;
+	esac
+	archive_root="$PERSISTENT_DIR/migration/legacy-sources"
+	stamp="${SUSAF_MIGRATION_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
+	destination="$archive_root/${stamp}-${label}"
+	[ ! -e "$destination" ] || destination="$destination-$$"
+	mkdir -p "$archive_root" || return 1
+	chmod 700 "$archive_root" 2>/dev/null
+	mv "$source" "$destination" || {
+		_migration_fail "Could not move $label into its recoverable SusAF archive"
+		return 1
+	}
+	record="$PERSISTENT_DIR/state/migrations/v${MIGRATION_SCHEMA}-${label}.archived"
+	printf 'source=%s\narchive=%s\n' "$source" "$destination" > "$record" || return 1
+	chmod 600 "$record" 2>/dev/null
+	_migration_note "[+] Archived legacy $label source at $destination"
+}
+
+archive_legacy_sources() {
+	_archive_legacy_source "resusfs" "$LEGACY_RESUSFS_DIR" \
+		"$PERSISTENT_DIR/state/migrations/v${MIGRATION_SCHEMA}-resusfs.done" || return 1
+	_archive_legacy_source "susfs4ksu" "$LEGACY_SUSFS4KSU_DIR" \
+		"$PERSISTENT_DIR/state/migrations/v${MIGRATION_SCHEMA}-susfs4ksu.done" || return 1
 }
 
 disable_legacy_resusfs_module() {

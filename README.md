@@ -50,23 +50,25 @@ All optional, all live under `/data/adb/SusAF/`. Missing or empty files mean "no
 
 Pre-made scripts for common spoofing and hiding tasks. They live in `/data/adb/SusAF/scripts/` and are enabled by default for set-and-forget users. They can be disabled by removing their filenames from `scripts_postfs.txt` or `scripts_bootcompleted.txt`.
 
-The inherited built-in script filenames retain their `ReSuSFS_` prefix so existing schedules migrate without being rewritten.
+Packaged built-ins use the `SusAF_` prefix. During migration, only the known
+legacy built-in names are rewritten in schedule files; custom script names and
+contents are left alone.
 
 Strong hiding is applied out of the box with no configuration needed. Power users can fine-tune individual scripts via the WebUI or by editing the files directly.
 
 | Script | Stage | What it does |
 |---|---|---|
-| `ReSuSFS_apply-cmdline-bootconfig.sh` | post-fs-data | hides bootloader unlock state from kernel cmdline/bootconfig |
-| `ReSuSFS_apply-kstat-add.sh` | post-fs-data | hides file stats for framework-managed paths |
-| `ReSuSFS_apply-ksu-settings.sh` | post-fs-data | sets KernelSU features for hiding and compatibility |
-| `ReSuSFS_apply-uname.sh` | post-fs-data | spoofs kernel version and build info from uname |
-| `ReSuSFS_apply-mount-hiding.sh` | boot-completed | hides module mounts redirected to system paths |
-| `ReSuSFS_apply-props.sh` | boot-completed | spoofs root indicators and removes custom ROM fingerprints |
-| `ReSuSFS_apply-settings.sh` | boot-completed | applies the explicit Developer Options/ADB mode; defaults to unchanged |
-| `ReSuSFS_apply-sus-maps.sh` | boot-completed | applies exact `sus_maps.txt` targets; no blanket `.so` or font scan |
-| `ReSuSFS_apply-sus-paths-loop.sh` | boot-completed | hides selected recovery/root-tool paths; PTY nodes are explicit-only |
-| `ReSuSFS_apply-sus-paths.sh` | boot-completed | hides custom ROM traces and addon.d paths |
-| `ReSuSFS_cleanup-markers.sh` | boot-completed | removes susfs leftover markers from shared storage |
+| `SusAF_apply-cmdline-bootconfig.sh` | post-fs-data | hides bootloader unlock state from kernel cmdline/bootconfig |
+| `SusAF_apply-kstat-add.sh` | post-fs-data | hides file stats for framework-managed paths |
+| `SusAF_apply-ksu-settings.sh` | post-fs-data | sets KernelSU features for hiding and compatibility |
+| `SusAF_apply-uname.sh` | post-fs-data | spoofs kernel version and build info from uname |
+| `SusAF_apply-mount-hiding.sh` | boot-completed | hides module mounts redirected to system paths |
+| `SusAF_apply-props.sh` | boot-completed | spoofs root indicators and removes custom ROM fingerprints |
+| `SusAF_apply-settings.sh` | boot-completed | applies the explicit Developer Options/ADB mode; defaults to unchanged |
+| `SusAF_apply-sus-maps.sh` | boot-completed | applies exact `sus_maps.txt` targets; no blanket `.so` or font scan |
+| `SusAF_apply-sus-paths-loop.sh` | boot-completed | hides selected recovery/root-tool paths; PTY nodes are explicit-only |
+| `SusAF_apply-sus-paths.sh` | boot-completed | hides custom ROM traces and addon.d paths |
+| `SusAF_cleanup-markers.sh` | boot-completed | removes susfs leftover markers from shared storage |
 
 `ADB_MODE=unchanged` is the safe default. `spoof-off` refuses without changing
 the working transport because this stack cannot currently spoof Settings
@@ -105,7 +107,13 @@ Scripts live under `/data/adb/SusAF/scripts/`. Which scripts run at which stage 
 
 On first installation, Sus'AF safely imports understood configuration from `/data/adb/ReSuSFS` and then `/data/adb/susfs4ksu`. Existing Sus'AF values win. UserHub scripts are copied byte-for-byte with their executable modes, and their post-fs-data, boot-completed, and cron assignments remain in the same stage.
 
-Legacy sources are never deleted or edited. Snapshots, rejected data, and conflicts are stored under `/data/adb/SusAF/migration/`. After a successful installation, an installed ReSuSFS module is disabled but retained so both modules cannot run competing boot services.
+After the import and stage-list verification succeed, the old top-level data
+directories are moved intact into
+`/data/adb/SusAF/migration/legacy-sources/`. This removes stale active-looking
+folders without deleting their contents. Snapshots, rejected data, conflicts,
+and renamed built-ins remain recoverable under `/data/adb/SusAF/migration/`.
+An installed legacy module is disabled but retained so two boot services cannot
+run at once.
 
 ## CLI
 
@@ -195,7 +203,7 @@ oversized archives are rejected.
 
 Report Sus'AF bugs and follow development in this fork:
 
-- **Issues:** [fgjaee/ReSuSFS issues](https://github.com/fgjaee/ReSuSFS/issues)
+- **Issues:** [Sus'AF issue tracker](https://github.com/fgjaee/ReSuSFS/issues)
 
 ## Credits
 

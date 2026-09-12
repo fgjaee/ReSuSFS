@@ -130,9 +130,9 @@ grep -Fqx 'after.init.svc.adbd=stopped' "$TEST_ROOT/disable.report"
 grep -Fqx 'after.adbd_pid=' "$TEST_ROOT/disable.report"
 grep -Fqx 'result=disabled' "$TEST_ROOT/disable.report"
 
-! grep -Fq 'for pty in /dev/pts/*' "$MODULE_DIR/configs/scripts/ReSuSFS_apply-sus-paths-loop.sh"
-! grep -Fq 'find /data/adb/modules -name "*.so"' "$MODULE_DIR/configs/scripts/ReSuSFS_apply-sus-maps.sh"
-! grep -Fq 'find /data/adb/modules -type f' "$MODULE_DIR/configs/scripts/ReSuSFS_apply-sus-maps.sh"
+! grep -Fq 'for pty in /dev/pts/*' "$MODULE_DIR/configs/scripts/SusAF_apply-sus-paths-loop.sh"
+! grep -Fq 'find /data/adb/modules -name "*.so"' "$MODULE_DIR/configs/scripts/SusAF_apply-sus-maps.sh"
+! grep -Fq 'find /data/adb/modules -type f' "$MODULE_DIR/configs/scripts/SusAF_apply-sus-maps.sh"
 
 cat > "$TEST_ROOT/bin/SusAF" <<'EOF'
 #!/bin/sh
@@ -146,12 +146,12 @@ export SUSAF_FAKE_CLI_LOG SUSAF_FAKE_PATH_LIST
 : > "$SUSAF_FAKE_CLI_LOG"
 
 SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
-sh "$MODULE_DIR/configs/scripts/ReSuSFS_apply-sus-maps.sh"
+sh "$MODULE_DIR/configs/scripts/SusAF_apply-sus-maps.sh"
 grep -Fqx -- '--apply-sus-maps' "$SUSAF_FAKE_CLI_LOG"
 
 SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
 SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
-sh "$MODULE_DIR/configs/scripts/ReSuSFS_apply-sus-paths-loop.sh"
+sh "$MODULE_DIR/configs/scripts/SusAF_apply-sus-paths-loop.sh"
 ! grep -Fq '/dev/pts/' "$SUSAF_FAKE_PATH_LIST"
 
 echo "safer-default tests passed"

@@ -58,7 +58,7 @@ SUSAF_MODULE_DIR="$(dirname "$0")/../module" \
 SUSAF_PERSISTENT_DIR="$TEST_ROOT/persistent" \
 SUSAF_BOOTCONFIG_SOURCE="$TEST_ROOT/bootconfig.in" \
 PATH="$TEST_ROOT/bin:$PATH" \
-sh "$(dirname "$0")/../module/configs/scripts/ReSuSFS_apply-cmdline-bootconfig.sh"
+sh "$(dirname "$0")/../module/configs/scripts/SusAF_apply-cmdline-bootconfig.sh"
 
 grep -Fqx -- '--apply-cmdline-bootconfig-direct' "$TEST_ROOT/boot-args"
 cmp "$TEST_ROOT/bootconfig.expected" "$TEST_ROOT/boot-captured"
@@ -87,7 +87,7 @@ SUSAF_BOOT_ID="$TEST_ROOT/boot-id" \
 SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
 SUSAF_UNAME_CAPTURE="$TEST_ROOT/uname-captured" \
 PATH="$TEST_ROOT/bin:$PATH" \
-sh "$(dirname "$0")/../module/configs/scripts/ReSuSFS_apply-uname.sh"
+sh "$(dirname "$0")/../module/configs/scripts/SusAF_apply-uname.sh"
 
 grep -Fqx 'release=6.1.99-android14-11-g1234567890ab' "$TEST_ROOT/uname-captured"
 grep -Fqx 'version=#1 SMP PREEMPT Fri Jan 2 03:04:05 UTC 2026' "$TEST_ROOT/uname-captured"
@@ -112,7 +112,7 @@ chmod 755 "$TEST_ROOT/bin/resetprop"
 SUSAF_RESETPROP_STATE="$TEST_ROOT/resetprop-state" \
 SUSAF_RESETPROP_LOG="$TEST_ROOT/resetprop-log" \
 PATH="$TEST_ROOT/bin:$PATH" \
-sh "$(dirname "$0")/../module/configs/scripts/ReSuSFS_apply-props.sh"
+sh "$(dirname "$0")/../module/configs/scripts/SusAF_apply-props.sh"
 
 for prop in ro.boot.verifiedbooterror ro.boot.verifyerrorpart vendor.boot.verifiedbooterror persist.vendor.verifyerrorpart; do
 	grep -Fqx -- "-d $prop" "$TEST_ROOT/resetprop-log"

@@ -1,5 +1,5 @@
 import { exec } from 'kernelsu-alt';
-import { basePath, moduleDirectory, filePaths, runReSuSFS, updateUIVisibility, linkRedirect } from '../../utils/util.js';
+import { basePath, moduleDirectory, filePaths, runSusAF, updateUIVisibility, linkRedirect } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
 import { exportConfig, restoreConfig } from '../../utils/backup.js';
 
@@ -123,7 +123,7 @@ async function updateStatus() {
 }
 
 async function getSusfsBin() {
-    const result = await exec(`grep '^SUSFS_BIN=' "${moduleDirectory}/ReSuSFS.sh" | head -n1 | cut -d= -f2`);
+    const result = await exec(`grep '^SUSFS_BIN=' "${moduleDirectory}/SusAF.sh" | head -n1 | cut -d= -f2`);
     const path = result.errno === 0 ? result.stdout.trim() : '';
     return path || '/data/adb/ksu/bin/ksu_susfs';
 }
@@ -166,8 +166,8 @@ export function mount() {
 
     const actionBtn = document.getElementById('action-btn');
     const forceUpdateButton = document.getElementById('force-update-btn');
-    actionBtn.onclick = () => runReSuSFS('--action');
-    forceUpdateButton.onclick = () => runReSuSFS('--force-update');
+    actionBtn.onclick = () => runSusAF('--action');
+    forceUpdateButton.onclick = () => runSusAF('--force-update');
 }
 
 export function onShow() {

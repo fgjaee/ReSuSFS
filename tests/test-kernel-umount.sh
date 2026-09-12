@@ -160,7 +160,7 @@ SUSAF_MOUNTINFO="$TEST_ROOT/mountinfo" \
 SUSAF_FAKE_CLI_ARGS="$TEST_ROOT/mount-hide.args" \
 SUSAF_FAKE_CLI_FILE="$TEST_ROOT/mount-hide.captured" \
 PATH="$TEST_ROOT/bin:$PATH" \
-sh "$MODULE_DIR/configs/scripts/ReSuSFS_apply-mount-hiding.sh"
+sh "$MODULE_DIR/configs/scripts/SusAF_apply-mount-hiding.sh"
 
 grep -Fqx -- '--apply-sus-paths-loop-direct' "$TEST_ROOT/mount-hide.args"
 cat > "$TEST_ROOT/mount-hide.expected" <<'EOF'

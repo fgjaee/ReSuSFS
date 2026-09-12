@@ -120,7 +120,7 @@ let actionRunning = false, isTerminalOpen = false;
  * @param {...string} args arguments to pass to SusAF.sh
  * @returns {void}
  */
-export function runReSuSFS(...args) {
+export function runSusAF(...args) {
     const terminal = document.getElementById('action-terminal');
     const terminalContent = document.getElementById('action-terminal-content');
     const backButton = document.querySelector('.back-button');

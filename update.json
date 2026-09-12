@@ -1,6 +1,6 @@
 {
-  "version": "v0.1.0-dev.1",
-  "versionCode": 12,
+  "version": "v0.1.0-dev.2",
+  "versionCode": 13,
   "zipUrl": "https://github.com/fgjaee/ReSuSFS/releases/latest/download/SusAF.zip",
   "changelog": "https://raw.githubusercontent.com/fgjaee/ReSuSFS/susaf-dev/CHANGELOG.md"
 }

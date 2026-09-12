@@ -157,7 +157,7 @@ SUSAF_PIDOF_BIN="$BIN_DIR/pidof" \
 SUSAF_MOUNTINFO="$TEST_ROOT/mountinfo" \
 SUSAF_BOOTCONFIG_SOURCE="$TEST_ROOT/bootconfig" \
 SUSAF_PROC_VERSION="$TEST_ROOT/proc-version" \
-sh "$MODULE_DIR/ReSuSFS.sh" --diagnostics > "$TEST_ROOT/stdout"
+sh "$MODULE_DIR/SusAF.sh" --diagnostics > "$TEST_ROOT/stdout"
 module_prop_after=$(sha256sum "$MODULE_DIR/module.prop")
 
 [ "$module_prop_before" = "$module_prop_after" ]
@@ -197,7 +197,7 @@ grep -Fqx 'updater.last_result=installed' "$REPORT"
 
 # The boot service must be event-based, not a perpetual metadata writer.
 ! grep -Fq 'while true' "$MODULE_DIR/service.sh"
-! grep -Eq 'sed .*module\.prop' "$MODULE_DIR/ReSuSFS.sh"
+! grep -Eq 'sed .*module\.prop' "$MODULE_DIR/SusAF.sh"
 
 . "$MODULE_DIR/lib/stage-state.sh"
 stage_state_begin test-stage

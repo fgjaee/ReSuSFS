@@ -3,6 +3,7 @@
 . "$MODPATH/common.sh"
 . "$MODPATH/utils.sh"
 . "$MODPATH/migrate.sh"
+. "$MODPATH/install-config.sh"
 
 export MODULE_HOT_INSTALL_REQUEST="true"
 export MODULE_HOT_RUN_SCRIPT="hotinstall.sh"
@@ -11,82 +12,33 @@ banner "$MODPATH"
 
 ui_print "[%] customize.sh "
 
-detect_key_press() {
-	timeout_seconds=6
-	timeout 0.5 getevent -c 0 >/dev/null 2>&1
-	read -r -t $timeout_seconds line < <(getevent -ql | awk '/KEY_VOLUME/ {print; exit}')
-	if [ $? -eq 142 ]; then
-		ui_print "[!] No key pressed within $timeout_seconds seconds. Skipping installation..."
-		return 1
-	fi
-	if echo "$line" | grep -q "KEY_VOLUMEUP"; then
-		return 0
-	else
-		ui_print "[+] Skipping reset..."
-		return 1
-	fi
-}
-
 CONFIG_DIR="$MODPATH/configs"
 
 [ ! -d "$CONFIG_DIR" ] || [ -z "$(ls -A "$CONFIG_DIR" 2>/dev/null)" ] && ui_print "[!] No config files found" && exit 0
 
-ui_print "[*] Legacy configuration is copied into $PERSISTENT_DIR; source directories are never deleted"
+ui_print "[*] Migrating legacy configuration into $PERSISTENT_DIR"
 migrate_legacy_configs || {
 	ui_print "[!] Migration did not complete. Installation stopped before changing the legacy module."
+	exit 1
+}
+
+repair_legacy_schedule_entries || {
+	ui_print "[!] Could not preserve all legacy UserHub stage assignments. Installation stopped."
 	exit 1
 }
 
 mkdir -p "$PERSISTENT_DIR" || exit 1
 chmod 700 "$PERSISTENT_DIR" 2>/dev/null
 
-refresh_unsafe_legacy_builtins "$CONFIG_DIR/scripts" || {
-	ui_print "[!] Could not safely refresh inherited ADB/PTY/SUS_MAP built-ins. Installation stopped."
+retire_legacy_builtin_names || {
+	ui_print "[!] Could not safely migrate legacy built-in names. Installation stopped."
 	exit 1
 }
 
-handle_files() {
-	src_dir="$1"
-	dst_dir="$2"
-	files="$3"
-	action="$4"
-	DIFFERENT=""
-	for file in $files; do
-		src="$src_dir/$file"
-		dst="$dst_dir/$file"
-		if [ ! -f "$dst" ]; then
-			mkdir -p "$dst_dir/$(dirname "$file")"
-			cp "$src" "$dst"
-			ui_print "[+] $file copied"
-		elif ! cmp -s "$src" "$dst"; then
-			DIFFERENT="$DIFFERENT $file"
-		fi
-	done
-	if [ -n "$DIFFERENT" ]; then
-		ui_print "[*] Changed files:"
-		for file in $DIFFERENT; do
-			ui_print "    - $file"
-		done
-		ui_print "[*] VOLUME UP to $action, DOWN to keep"
-		if detect_key_press; then
-			for file in $DIFFERENT; do
-				mkdir -p "$dst_dir/$(dirname "$file")"
-				cp "$src_dir/$file" "$dst_dir/$file"
-				ui_print "[+] $file $action"
-			done
-		else
-			ui_print "[+] Kept existing files"
-		fi
-	fi
-}
-
-handle_files "$CONFIG_DIR" "$PERSISTENT_DIR" "scripts_bootcompleted.txt scripts_postfs.txt" "updated"
-if [ -d "$CONFIG_DIR/scripts" ]; then
-	handle_files "$CONFIG_DIR/scripts" "$PERSISTENT_DIR/scripts" "$(get_all_files "$CONFIG_DIR/scripts")" "updated"
-fi
-
-CONFIG_FILES=$(get_all_files "$CONFIG_DIR" | grep -v '^scripts/')
-[ -n "$CONFIG_FILES" ] && handle_files "$CONFIG_DIR" "$PERSISTENT_DIR" "$CONFIG_FILES" "reset"
+merge_schedule_defaults "$CONFIG_DIR/scripts_postfs.txt" "$PERSISTENT_DIR/scripts_postfs.txt" || exit 1
+merge_schedule_defaults "$CONFIG_DIR/scripts_bootcompleted.txt" "$PERSISTENT_DIR/scripts_bootcompleted.txt" || exit 1
+install_packaged_builtins "$CONFIG_DIR/scripts" "$PERSISTENT_DIR/scripts" || exit 1
+install_missing_defaults "$CONFIG_DIR" "$PERSISTENT_DIR" || exit 1
 
 rm -rf "$CONFIG_DIR"
 
@@ -110,6 +62,11 @@ fi
 
 disable_legacy_resusfs_module || {
 	ui_print "[!] Could not disable the legacy ReSuSFS module; disable it manually before reboot"
+	exit 1
+}
+
+archive_legacy_sources || {
+	ui_print "[!] Legacy configuration was migrated but could not be archived; it remains in its original location"
 	exit 1
 }
 
