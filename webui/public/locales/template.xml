@@ -218,4 +218,5 @@
     <string name="backup_restore_invalid_config">Invalid Sus'AF config</string>
     <string name="backup_restore_restored">Config restored succesfully</string>
     <string name="backup_restore_restore_fail">Fail to restore config</string>
+    <string name="backup_restore_confirm">Restored UserHub scripts can run as root on the next boot. Continue only if you trust this archive.</string>
 </resources>

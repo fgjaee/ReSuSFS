@@ -179,9 +179,15 @@ rollback, and final status appear on the Diagnostics page.
 
 ## Backup and share your config
 
-The WebUI can export all your config files, built-in scripts, and UserHub scripts into a single archive, and restore from one. This makes it easy to share a working setup with the community, hand someone your config, or back it up before flashing something risky. Your strong hiding setup travels with you.
+The WebUI exports recognized Sus'AF settings, boot schedules, WebUI assets,
+and UserHub scripts into a schema-marked archive. Restore validates every
+member before extraction, uses a private staging directory, and keeps replaced
+files under `/data/adb/SusAF/restore/`. If the merge fails, it rolls installed
+files back instead of leaving a partial configuration.
 
-Export creates an archive in `/storage/emulated/0/Download/`. Send that file to anyone, they load it with Restore, done.
+Export creates the archive in `/storage/emulated/0/Download/`. Unknown paths,
+links, special files, traversal, duplicate members, invalid manifests, and
+oversized archives are rejected.
 
 ## Community
 

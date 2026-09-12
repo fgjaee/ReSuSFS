@@ -59,6 +59,10 @@ Required correction:
 
 ### P0: WebUI restore extracts an untrusted archive as root
 
+Status: corrected on `susaf-dev` with a schema-marked allowlisted export,
+pre-extraction member/type/count/size validation, private staging, collision
+backups, atomic per-file replacement, and transactional rollback.
+
 `webui/utils/backup.js` extracts a selected `tar.gz` directly into the
 persistent directory. There is no path, link, type, size, or manifest
 validation. A malicious archive can use traversal or symlink entries to write
@@ -274,8 +278,8 @@ hardcodes the old persistent directory is reported for manual review.
 
 ## Implementation slices
 
-Slices 1 through 6 and the secure-updater half of slice 7 are implemented on
-`susaf-dev`. Safe staged restore and release hardening remain release blockers.
+Slices 1 through 7 are implemented on `susaf-dev`. Release hardening remains
+the final release blocker.
 
 1. **Identity and migration foundation**
    - external Sus'AF identity, dynamic module paths, compatibility CLI

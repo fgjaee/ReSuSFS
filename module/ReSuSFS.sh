@@ -12,6 +12,7 @@ SUSFS_MIN_VERSION="v2.2.0"
 . "$MODDIR/utils.sh"
 . "$MODDIR/lib/kernel-umount.sh"
 . "$MODDIR/lib/diagnostics.sh"
+. "$MODDIR/lib/backup-restore.sh"
 
 versionCode=$(grep versionCode $MODDIR/module.prop | sed 's/versionCode=//g' )
 
@@ -349,6 +350,8 @@ show_help () {
 	printf " --stage-late \t\t\t\tboot-completed stage only\n"
 	printf " --status \t\t\t\tshow susfs version / variant / enabled features\n"
 	printf " --force-update \t\t\tinstall the release-pinned, verified SuSFS binary\n"
+	printf " --export-config \t\t\texport a validated Sus'AF configuration archive\n"
+	printf " --restore-config <archive> \t\tstage, validate, and restore a Sus'AF archive\n"
 	printf " --diagnostics \t\t\trefresh and print the private diagnostics snapshot\n"
 	printf " --status-report \t\t\trefresh diagnostics without editing module.prop\n"
 	printf "\n"
@@ -380,6 +383,8 @@ case "$1" in
 	--stage-late) stage_late; exit ;;
 	--status) show_status; exit ;;
 	--force-update) update_susfs; exit ;;
+	--export-config) export_susaf_config; exit ;;
+	--restore-config) restore_susaf_config "$2"; exit ;;
 	--status-report) status_report; exit ;;
 	--diagnostics) show_diagnostics; exit ;;
 	--apply-sus-paths) apply_sus_paths "$2"; exit ;;

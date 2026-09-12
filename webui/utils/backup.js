@@ -1,5 +1,5 @@
 import { exec } from 'kernelsu-alt';
-import { showPrompt, basePath } from './util.js';
+import { showPrompt, moduleDirectory } from './util.js';
 import { getString } from './language.js';
 import { FileSelector } from './file_selector.js';
 
@@ -9,34 +9,12 @@ import { FileSelector } from './file_selector.js';
  * @returns {Promise<void>}
  */
 export async function exportConfig() {
-    const command = `
-cd "${basePath}" || { echo "ERROR_CD"; exit 1; }
-
-if [ -z "$(ls -A . 2>/dev/null)" ]; then
-    echo "NOTHING_TO_EXPORT"
-    exit 1
-fi
-
-DIR="/storage/emulated/0/Download"
-mkdir -p "$DIR/SusAF/log"
-TAR_LOG="$DIR/SusAF/log/SusAF_Export_tar.log"
-OUT="\${DIR}/SusAF_config_$(date +%Y%m%d_%H%M%S).tar.gz"
-busybox tar czf "$OUT" . 2> "$TAR_LOG"
-
-if [ -f "$OUT" ]; then
-    echo "$OUT"
-else
-    echo "ERROR_TAR_FAILED"
-    cat "$TAR_LOG" 2>/dev/null
-    exit 1
-fi
-    `;
-
-    const result = await exec(command);
+    const result = await exec(`sh "${moduleDirectory}/SusAF.sh" --export-config`);
     const output = result.stdout.trim();
+    const exportedPath = output.match(/^SUSAF_EXPORT_PATH=(.+)$/m)?.[1];
 
-    if (result.errno === 0 && output && !output.startsWith('ERROR_')) {
-        showPrompt(getString('backup_restore_exported', output));
+    if (result.errno === 0 && exportedPath) {
+        showPrompt(getString('backup_restore_exported', exportedPath));
     } else if (output.includes('NOTHING_TO_EXPORT')) {
         showPrompt(getString('backup_restore_nothing_to_export'), false);
     } else {
@@ -46,15 +24,20 @@ fi
 }
 
 /**
- * Restore config from a tar.gz archive, extracting it directly into
- * PERSISTENT_DIR, overwriting any files with the same name.
+ * Restore config from a tar.gz archive through the module's staged validator.
  * @returns {Promise<void>}
  */
 export async function restoreConfig() {
     const path = await FileSelector.getFilePath('tar.gz');
     if (!path) return;
+    if (/[\0\r\n]/.test(path)) {
+        showPrompt(getString('backup_restore_restore_fail'), false);
+        return;
+    }
+    if (!confirm(getString('backup_restore_confirm'))) return;
 
-    const result = await exec(`busybox tar xzf "${path}" -C "${basePath}" 2>&1`);
+    const quotedPath = `'${path.replaceAll("'", `'"'"'`)}'`;
+    const result = await exec(`sh "${moduleDirectory}/SusAF.sh" --restore-config ${quotedPath}`);
     if (result.errno === 0) {
         showPrompt(getString('backup_restore_restored'));
     } else {

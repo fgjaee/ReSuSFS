@@ -54,6 +54,7 @@ jobs:
         ./tests/test-safer-defaults.sh
         ./tests/test-diagnostics.sh
         ./tests/test-secure-updater.sh
+        ./tests/test-safe-restore.sh
 
     - name: Validate metadata
       run: |
