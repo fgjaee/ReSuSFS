@@ -1,0 +1,63 @@
+<div class="body-content constant-height diagnostics-page">
+    <div class="box translucent diagnostics-status-card">
+        <div class="diagnostics-status-row">
+            <div class="diagnostics-status-dot" id="diagnostics-status-dot"></div>
+            <div class="diagnostics-status-copy">
+                <h2 id="diagnostics-status-title" data-i18n="diagnostics_loading"></h2>
+                <p id="diagnostics-status-summary" data-i18n="diagnostics_loading_hint"></p>
+            </div>
+        </div>
+        <p class="diagnostics-generated" id="diagnostics-generated"></p>
+        <div class="diagnostics-actions">
+            <md-filled-button id="diagnostics-refresh">
+                <span data-i18n="diagnostics_refresh"></span>
+            </md-filled-button>
+            <md-filled-button id="diagnostics-export">
+                <span data-i18n="diagnostics_export"></span>
+            </md-filled-button>
+        </div>
+    </div>
+
+    <div class="diagnostics-error" id="diagnostics-error" role="status"></div>
+
+    <div id="diagnostics-content" class="diagnostics-content" hidden>
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_runtime"></h3>
+            <div class="diagnostics-rows" id="diagnostics-runtime-rows"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_kernel_umount"></h3>
+            <div class="diagnostics-rows" id="diagnostics-kernel-rows"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_targets"></h3>
+            <div class="diagnostics-count-grid" id="diagnostics-target-grid"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_boot_state"></h3>
+            <div class="diagnostics-rows" id="diagnostics-boot-rows"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_adb"></h3>
+            <div class="diagnostics-rows" id="diagnostics-adb-rows"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_stages"></h3>
+            <div class="diagnostics-rows" id="diagnostics-stage-rows"></div>
+        </div>
+
+        <div class="box diagnostics-group">
+            <h3 data-i18n="diagnostics_migration_update"></h3>
+            <div class="diagnostics-rows" id="diagnostics-migration-rows"></div>
+        </div>
+
+        <p class="diagnostics-privacy" data-i18n="diagnostics_privacy"></p>
+    </div>
+
+    <div class="placeholder"></div>
+</div>

@@ -52,6 +52,7 @@ jobs:
         ./tests/test-boot-state.sh
         ./tests/test-kernel-umount.sh
         ./tests/test-safer-defaults.sh
+        ./tests/test-diagnostics.sh
 
     - name: Validate metadata
       run: |

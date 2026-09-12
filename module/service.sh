@@ -7,9 +7,6 @@ while [ "$(getprop sys.boot_completed)" != "1" ]; do
 	sleep 1
 done
 
-(
-	while true; do
-		sh "$MODULE_DIR/SusAF.sh" --status-report > /dev/null 2>&1
-		sleep 5
-	done
-) &
+# One event-based snapshot after Android finishes booting. The WebUI can
+# explicitly refresh it later; no installed module file is rewritten.
+sh "$MODULE_DIR/SusAF.sh" --status-report > /dev/null 2>&1

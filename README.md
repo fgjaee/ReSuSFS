@@ -77,6 +77,7 @@ off and `adbd` has stopped.
 - **Strong hiding by default**, built-in scripts are pre-enabled for set-and-forget users
 - **Status dashboard**, see if SuSFS is active at a glance, tap for the full enabled-features breakdown straight from the kernel
 - **Configuration summary**, live entry counts per feature and enabled script count, right on the home page
+- **Private diagnostics page**, inspect KernelSU/SuSFS state, boot sanitation, ADB mode, boot-stage results, migration, and targeted-rule counts; refresh or export explicitly
 - **Built-in code editor**, full-screen editor for every config file and user script, no terminal needed
 - **File manager**, browse storage and load a custom file straight into any feature, without overwriting your default
 - **User-friendly SuSFS configs**, every feature exposed as its own clean box: edit, apply, or load custom
@@ -123,7 +124,8 @@ usage:
  --stage-early 				post-fs-data stage only
  --stage-late 				boot-completed stage only
  --status 				show susfs version / variant / enabled features
- --status-report 			silently refresh module.prop's live status line
+ --diagnostics 			refresh and print the private diagnostics snapshot
+ --status-report 			refresh diagnostics without editing module.prop
 
 if [file] is given it is appended (deduped) into the default list, then applied:
  --apply-sus-paths [file] 		add_sus_path from list
@@ -154,6 +156,13 @@ Check status any time to confirm SuSFS is active and see which kernel features a
 ```sh
 SusAF --status
 ```
+
+`SusAF --diagnostics` atomically refreshes
+`/data/adb/SusAF/state/diagnostics.properties` and prints it. The snapshot is
+mode `0600`; it includes system state and counts but excludes configured target
+paths and UserHub script contents. The WebUI Diagnostics page under More reads
+the last boot snapshot without changing device configuration, with separate
+Refresh and Export actions.
 
 ## Backup and share your config
 

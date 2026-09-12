@@ -381,6 +381,11 @@ export const PAGE_CONFIG = {
         },
         title: 'footer_more'
     },
+    'page-diagnostics': {
+        container: null,
+        main: [],
+        title: 'diagnostics_title'
+    },
     'default': {
         container: null,
         main: [],

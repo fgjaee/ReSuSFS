@@ -29,6 +29,13 @@ document.querySelectorAll('.bottom-bar-item').forEach(item => {
     item.addEventListener('click', () => router.navigate(page));
 });
 
+// Nested pages can opt into the same router without importing it and creating
+// a circular module dependency.
+document.addEventListener('click', event => {
+    const target = event.target.closest('[data-route]');
+    if (target?.dataset.route) router.navigate(target.dataset.route);
+});
+
 /**
  * Setup the Rick Roll overlay to appear on April 1st with a 70% chance.
  * Consecutive trigger protection for user experience.

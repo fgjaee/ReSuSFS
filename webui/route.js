@@ -5,11 +5,13 @@ import { applyTranslations } from './utils/language.js';
 import homeHtml from './page/home/home.html?raw';
 import susfsHtml from './page/susfs/susfs.html?raw';
 import userhubHtml from './page/userhub/userhub.html?raw';
+import diagnosticsHtml from './page/diagnostics/diagnostics.html?raw';
 import moreHtml from './page/more/more.html?raw';
 
 import * as homeModule from './page/home/home.js';
 import * as susfsModule from './page/susfs/susfs.js';
 import * as userhubModule from './page/userhub/userhub.js';
+import * as diagnosticsModule from './page/diagnostics/diagnostics.js';
 import * as moreModule from './page/more/more.js';
 
 class Router {
@@ -23,6 +25,7 @@ class Router {
             home: { html: homeHtml, module: homeModule },
             susfs: { html: susfsHtml, module: susfsModule },
             userhub: { html: userhubHtml, module: userhubModule },
+            diagnostics: { html: diagnosticsHtml, module: diagnosticsModule },
             more: { html: moreHtml, module: moreModule }
         };
     }
@@ -112,8 +115,9 @@ class Router {
     }
 
     updateFooter(name) {
+        const footerName = name === 'diagnostics' ? 'more' : name;
         document.querySelectorAll('.bottom-bar-item').forEach(item => {
-            const isTarget = item.getAttribute('page') === name;
+            const isTarget = item.getAttribute('page') === footerName;
             
             if (isTarget) {
                 item.setAttribute('selected', '');

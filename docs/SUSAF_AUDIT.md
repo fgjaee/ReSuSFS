@@ -267,6 +267,9 @@ hardcodes the old persistent directory is reported for manual review.
 
 ## Implementation slices
 
+Slices 1 through 6 are implemented on `susaf-dev`. Secure update/restore and
+release hardening remain release blockers.
+
 1. **Identity and migration foundation**
    - external Sus'AF identity, dynamic module paths, compatibility CLI
    - `/data/adb/SusAF` schema, state/log directories, safe idempotent migration

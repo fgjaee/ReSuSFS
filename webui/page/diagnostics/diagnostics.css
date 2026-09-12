@@ -1,0 +1,192 @@
+.diagnostics-page {
+    gap: 12px;
+}
+
+.diagnostics-status-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: var(--md-sys-color-secondary-container);
+    color: var(--md-sys-color-on-secondary-container);
+}
+
+.diagnostics-status-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.diagnostics-status-dot {
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--md-sys-color-outline);
+}
+
+.diagnostics-status-dot.healthy {
+    background: #4caf50;
+    box-shadow: 0 0 6px 1px rgba(76, 175, 80, 0.45);
+}
+
+.diagnostics-status-dot.disabled {
+    background: #ff9800;
+}
+
+.diagnostics-status-dot.degraded {
+    background: var(--md-sys-color-error);
+}
+
+.diagnostics-status-copy {
+    min-width: 0;
+    flex: 1;
+}
+
+.diagnostics-status-copy h2,
+.diagnostics-status-copy p,
+.diagnostics-generated,
+.diagnostics-privacy {
+    margin: 0;
+}
+
+.diagnostics-status-copy p,
+.diagnostics-generated {
+    margin-top: 3px;
+    font-size: 0.83em;
+    opacity: 0.75;
+}
+
+.diagnostics-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.diagnostics-actions md-filled-button {
+    width: 100%;
+    --md-filled-button-container-shape: 14px;
+}
+
+.diagnostics-error {
+    display: none;
+    width: calc(100% - 32px);
+    max-width: 760px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    color: var(--md-sys-color-on-error-container);
+    background: var(--md-sys-color-error-container);
+    font-size: 0.88em;
+}
+
+.diagnostics-error.show {
+    display: block;
+}
+
+.diagnostics-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+}
+
+.diagnostics-group {
+    padding: 0;
+    overflow: hidden;
+}
+
+.diagnostics-group h3 {
+    margin: 0;
+    padding: 14px 16px 10px;
+    color: var(--md-sys-color-primary);
+    font-size: 0.78em;
+}
+
+.diagnostics-rows {
+    display: flex;
+    flex-direction: column;
+}
+
+.diagnostics-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.9fr) minmax(0, 1.35fr);
+    gap: 16px;
+    align-items: start;
+    padding: 12px 16px;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-tonal-surface);
+    font-size: 0.86em;
+}
+
+.diagnostics-label {
+    opacity: 0.72;
+}
+
+.diagnostics-value {
+    text-align: end;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font-family: ui-monospace, "Roboto Mono", monospace;
+}
+
+.diagnostics-value.warning {
+    color: var(--md-sys-color-error);
+    font-weight: 600;
+}
+
+.diagnostics-count-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+    background: var(--md-sys-color-outline-variant);
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.diagnostics-count-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 72px;
+    padding: 14px;
+    box-sizing: border-box;
+    background: var(--md-sys-color-tonal-surface);
+}
+
+.diagnostics-count {
+    font-size: 1.35em;
+    font-weight: 600;
+}
+
+.diagnostics-count-label,
+.diagnostics-count-malformed {
+    font-size: 0.76em;
+    opacity: 0.72;
+}
+
+.diagnostics-count-malformed.warning {
+    opacity: 1;
+    color: var(--md-sys-color-error);
+}
+
+.diagnostics-privacy {
+    width: calc(100% - 48px);
+    max-width: 728px;
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.78em;
+    text-align: center;
+    line-height: 1.45;
+}
+
+@media (max-width: 430px) {
+    .diagnostics-row {
+        grid-template-columns: minmax(105px, 0.8fr) minmax(0, 1.2fr);
+        gap: 10px;
+    }
+}
+
+@media (min-width: 640px) {
+    .diagnostics-count-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}

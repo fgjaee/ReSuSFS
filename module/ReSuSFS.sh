@@ -6,11 +6,12 @@ MODDIR="$MODULE_DIR"
 USER_SCRIPTS_DIR="$PERSISTENT_DIR/scripts"
 POSTFS_SCRIPTS_FILE="$PERSISTENT_DIR/scripts_postfs.txt"
 BOOTCOMPLETED_SCRIPTS_FILE="$PERSISTENT_DIR/scripts_bootcompleted.txt"
-SUSFS_BIN=/data/adb/ksu/bin/ksu_susfs
+SUSFS_BIN="${SUSAF_SUSFS_BIN:-/data/adb/ksu/bin/ksu_susfs}"
 SUSFS_MIN_VERSION="v2.2.0"
 
 . "$MODDIR/utils.sh"
 . "$MODDIR/lib/kernel-umount.sh"
+. "$MODDIR/lib/diagnostics.sh"
 
 versionCode=$(grep versionCode $MODDIR/module.prop | sed 's/versionCode=//g' )
 
@@ -283,35 +284,7 @@ apply_cmdline_bootconfig_direct() {
 }
 
 status_report() {
-	if [ -f $MODDIR/disable ]; then
-		echo "[*] not running since module has been disabled"
-		string="description=status: disabled ❌ | $(date)"
-		sed -i "s/^description=.*/$string/g" $MODDIR/module.prop
-		return
-	fi
-
-	if [ ! -x "$SUSFS_BIN" ]; then
-		echo "[x] ksu_susfs binary not found at $SUSFS_BIN 😭"
-		echo "[x] this kernel does not expose susfs, or susfs userspace tool is missing"
-		string="description=status: susfs binary not found 😭 needs correction 💢"
-		sed -i "s/^description=.*/$string/g" $MODDIR/module.prop
-		return
-	fi
-
-	susfs_version=$(susfs show version 2>/dev/null)
-	if [ -z "$susfs_version" ] || ! version_ge "$susfs_version" "$SUSFS_MIN_VERSION"; then
-		echo "[x] unsupported susfs version: '$susfs_version' 😭"
-		echo "[x] need $SUSFS_MIN_VERSION or higher"
-		string="description=status: unsupported susfs $susfs_version ❌ | need $SUSFS_MIN_VERSION+"
-		sed -i "s/^description=.*/$string/g" $MODDIR/module.prop
-		return
-	fi
-
-	feat=$(susfs show enabled_features 2>/dev/null | wc -l)
-	variant=$(susfs show variant 2>/dev/null)
-	string="description=status: active ✅ | susfs $susfs_version ($variant) | features: $feat 🧩"
-	sed -i "s/^description=.*/$string/g" $MODDIR/module.prop
-	echo "[+] $susfs_version | $variant | features: $feat"
+	generate_diagnostics
 }
 
 apply_toggles() {
@@ -352,7 +325,6 @@ stage_late() {
 	apply_kstat_update
 	apply_toggles late
 	sync_cron_scripts
-	status_report
 }
 
 run() {
@@ -363,7 +335,7 @@ run() {
 action() { run; }
 
 show_status() {
-	echo "$susfs_version"
+	susfs show version
 	susfs show variant
 	susfs show enabled_features
 }
@@ -376,7 +348,8 @@ show_help () {
 	printf " --stage-early \t\t\t\tpost-fs-data stage only\n"
 	printf " --stage-late \t\t\t\tboot-completed stage only\n"
 	printf " --status \t\t\t\tshow susfs version / variant / enabled features\n"
-	printf " --status-report \t\t\tsilently refresh module.prop's live status line\n"
+	printf " --diagnostics \t\t\trefresh and print the private diagnostics snapshot\n"
+	printf " --status-report \t\t\trefresh diagnostics without editing module.prop\n"
 	printf "\n"
 	printf "if [file] is given it is appended (deduped) into the default list, then applied:\n"
 	printf " --apply-sus-paths [file] \t\tadd_sus_path from list\n"
@@ -406,6 +379,7 @@ case "$1" in
 	--stage-late) stage_late; exit ;;
 	--status) show_status; exit ;;
 	--status-report) status_report; exit ;;
+	--diagnostics) show_diagnostics; exit ;;
 	--apply-sus-paths) apply_sus_paths "$2"; exit ;;
 	--apply-sus-paths-loop) apply_sus_paths_loop "$2"; exit ;;
 	--apply-sus-paths-loop-direct) apply_sus_paths_loop_direct "$2"; exit ;;
