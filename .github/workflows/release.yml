@@ -53,6 +53,7 @@ jobs:
         ./tests/test-kernel-umount.sh
         ./tests/test-safer-defaults.sh
         ./tests/test-diagnostics.sh
+        ./tests/test-secure-updater.sh
 
     - name: Validate metadata
       run: |

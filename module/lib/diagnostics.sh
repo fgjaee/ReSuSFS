@@ -148,6 +148,7 @@ generate_diagnostics() {
 	local feature_report="$state_dir/kernel_umount.feature.txt"
 	local mount_report="$state_dir/kernel_umount.report.txt"
 	local adb_report="$state_dir/adb_mode.report.txt"
+	local updater_report="$state_dir/updater.report.txt"
 	local generated_boot="$state_dir/cmdline_or_bootconfig.generated.txt"
 	local generated_mounts="$state_dir/mount_hiding.generated.txt"
 	local postfs_report="$state_dir/stage.post-fs-data.properties"
@@ -309,8 +310,17 @@ generate_diagnostics() {
 
 		diagnostics_put migration.resusfs "$(diagnostics_migration_status "$state_dir/migrations/v1-resusfs.done" "$LEGACY_RESUSFS_DIR")"
 		diagnostics_put migration.susfs4ksu "$(diagnostics_migration_status "$state_dir/migrations/v1-susfs4ksu.done" "$LEGACY_SUSFS4KSU_DIR")"
-		diagnostics_put updater.verification not-implemented
-		diagnostics_put updater.last_result not-recorded
+		diagnostics_put updater.source_repository "$(diagnostics_property "$updater_report" source_repository not-recorded)"
+		diagnostics_put updater.source_commit "$(diagnostics_property "$updater_report" source_commit not-recorded)"
+		diagnostics_put updater.verification "$(diagnostics_property "$updater_report" verification not-recorded)"
+		diagnostics_put updater.expected_sha256 "$(diagnostics_property "$updater_report" expected_sha256 not-recorded)"
+		diagnostics_put updater.actual_sha256 "$(diagnostics_property "$updater_report" actual_sha256 not-recorded)"
+		diagnostics_put updater.installed_sha256 "$(diagnostics_property "$updater_report" installed_sha256 not-recorded)"
+		diagnostics_put updater.candidate_version "$(diagnostics_property "$updater_report" candidate_version not-recorded)"
+		diagnostics_put updater.candidate_variant "$(diagnostics_property "$updater_report" candidate_variant not-recorded)"
+		diagnostics_put updater.backup "$(diagnostics_property "$updater_report" backup not-recorded)"
+		diagnostics_put updater.rollback "$(diagnostics_property "$updater_report" rollback not-recorded)"
+		diagnostics_put updater.last_result "$(diagnostics_property "$updater_report" result not-recorded)"
 	} > "$temp" || {
 		rm -f "$temp" "$candidates"
 		return 1

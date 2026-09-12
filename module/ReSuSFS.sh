@@ -348,6 +348,7 @@ show_help () {
 	printf " --stage-early \t\t\t\tpost-fs-data stage only\n"
 	printf " --stage-late \t\t\t\tboot-completed stage only\n"
 	printf " --status \t\t\t\tshow susfs version / variant / enabled features\n"
+	printf " --force-update \t\t\tinstall the release-pinned, verified SuSFS binary\n"
 	printf " --diagnostics \t\t\trefresh and print the private diagnostics snapshot\n"
 	printf " --status-report \t\t\trefresh diagnostics without editing module.prop\n"
 	printf "\n"
@@ -378,6 +379,7 @@ case "$1" in
 	--stage-early) stage_early; exit ;;
 	--stage-late) stage_late; exit ;;
 	--status) show_status; exit ;;
+	--force-update) update_susfs; exit ;;
 	--status-report) status_report; exit ;;
 	--diagnostics) show_diagnostics; exit ;;
 	--apply-sus-paths) apply_sus_paths "$2"; exit ;;

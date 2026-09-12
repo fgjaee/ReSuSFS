@@ -173,7 +173,16 @@
     <string name="diagnostics_migration_update">Migration and updater</string>
     <string name="diagnostics_migration_resusfs">ReSuSFS migration</string>
     <string name="diagnostics_migration_susfs4ksu">susfs4ksu migration</string>
+    <string name="diagnostics_updater_source">Updater source</string>
+    <string name="diagnostics_updater_commit">Pinned commit</string>
     <string name="diagnostics_updater_verification">Updater verification</string>
+    <string name="diagnostics_updater_expected">Expected SHA-256</string>
+    <string name="diagnostics_updater_actual">Downloaded SHA-256</string>
+    <string name="diagnostics_updater_installed">Installed SHA-256</string>
+    <string name="diagnostics_updater_version">Compatibility version</string>
+    <string name="diagnostics_updater_variant">Kernel variant</string>
+    <string name="diagnostics_updater_backup">Known-good backup</string>
+    <string name="diagnostics_updater_rollback">Rollback</string>
     <string name="diagnostics_updater_last_result">Updater last result</string>
     <!-- More -->
     <string name="more_documents">Documents</string>

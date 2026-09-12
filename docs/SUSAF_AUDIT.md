@@ -36,6 +36,10 @@ merged wholesale.
 
 ### P0: updater is an executable supply-chain risk
 
+Status: corrected on `susaf-dev` with an immutable manifest pin, SHA-256 and
+AArch64 ELF verification, compatibility probing, atomic install, retained
+known-good backup, rollback, and structured diagnostics.
+
 `module/utils.sh` downloads a moving-branch `ksu_susfs` executable, disables
 TLS certificate checking, checks only that the response is non-empty, and
 then replaces the installed binary. Both installation and the module action
@@ -187,6 +191,9 @@ only when the rendered value changes.
 
 ### P2: Home invokes a nonexistent CLI flag
 
+Status: corrected on `susaf-dev`; `--force-update` now invokes the verified
+release-pinned updater.
+
 The Home page calls `--force-update`, but `ReSuSFS.sh` has no matching case.
 It falls through to help output. The Sus'AF updater must provide a real,
 verified operation or remove the button until that operation exists.
@@ -267,8 +274,8 @@ hardcodes the old persistent directory is reported for manual review.
 
 ## Implementation slices
 
-Slices 1 through 6 are implemented on `susaf-dev`. Secure update/restore and
-release hardening remain release blockers.
+Slices 1 through 6 and the secure-updater half of slice 7 are implemented on
+`susaf-dev`. Safe staged restore and release hardening remain release blockers.
 
 1. **Identity and migration foundation**
    - external Sus'AF identity, dynamic module paths, compatibility CLI

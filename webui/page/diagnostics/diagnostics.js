@@ -69,7 +69,16 @@ const GROUPS = {
     migration: [
         ['migration.resusfs', 'diagnostics_migration_resusfs'],
         ['migration.susfs4ksu', 'diagnostics_migration_susfs4ksu'],
+        ['updater.source_repository', 'diagnostics_updater_source'],
+        ['updater.source_commit', 'diagnostics_updater_commit'],
         ['updater.verification', 'diagnostics_updater_verification'],
+        ['updater.expected_sha256', 'diagnostics_updater_expected'],
+        ['updater.actual_sha256', 'diagnostics_updater_actual'],
+        ['updater.installed_sha256', 'diagnostics_updater_installed'],
+        ['updater.candidate_version', 'diagnostics_updater_version'],
+        ['updater.candidate_variant', 'diagnostics_updater_variant'],
+        ['updater.backup', 'diagnostics_updater_backup'],
+        ['updater.rollback', 'diagnostics_updater_rollback'],
         ['updater.last_result', 'diagnostics_updater_last_result'],
     ],
 };

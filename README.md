@@ -164,6 +164,19 @@ paths and UserHub script contents. The WebUI Diagnostics page under More reads
 the last boot snapshot without changing device configuration, with separate
 Refresh and Export actions.
 
+## Secure SuSFS userspace updates
+
+Installation, the module-manager action, and the WebUI update control use the
+same fail-closed updater. Each Sus'AF release pins an immutable source commit
+and SHA-256 digest in `update-manifest.properties`; a moving branch cannot
+silently change the executable delivered by an existing release.
+
+The updater downloads into a private state directory without disabling TLS
+checks, verifies the digest and AArch64 ELF identity, probes the kernel SuSFS
+version/variant, then installs with a same-directory atomic rename. A verified
+working binary is retained for rollback. Source, hashes, probe results, backup,
+rollback, and final status appear on the Diagnostics page.
+
 ## Backup and share your config
 
 The WebUI can export all your config files, built-in scripts, and UserHub scripts into a single archive, and restore from one. This makes it easy to share a working setup with the community, hand someone your config, or back it up before flashing something risky. Your strong hiding setup travels with you.

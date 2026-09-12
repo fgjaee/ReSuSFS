@@ -56,6 +56,19 @@ cat > "$STATE_DIR/adb_mode.report.txt" <<'EOF'
 mode=unchanged
 result=unchanged
 EOF
+cat > "$STATE_DIR/updater.report.txt" <<'EOF'
+source_repository=sidex15/susfs4ksu-binaries
+source_commit=26958b7c3dca487c17227b62a6dd7cf11645b49a
+expected_sha256=8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa
+actual_sha256=8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa
+installed_sha256=8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa
+candidate_version=v2.3.0
+candidate_variant=GKI
+verification=verified
+backup=created
+rollback=not-needed
+result=installed
+EOF
 cat > "$STATE_DIR/cmdline_or_bootconfig.generated.txt" <<'EOF'
 androidboot.verifiedbootstate = "green"
 androidboot.vbmeta.device_state = "locked"
@@ -175,7 +188,10 @@ grep -Fqx 'stage.postfs.duration=2' "$REPORT"
 grep -Fqx 'stage.boot.duration=3' "$REPORT"
 grep -Fqx 'migration.resusfs=complete' "$REPORT"
 grep -Fqx 'migration.susfs4ksu=not-needed' "$REPORT"
-grep -Fqx 'updater.verification=not-implemented' "$REPORT"
+grep -Fqx 'updater.verification=verified' "$REPORT"
+grep -Fqx 'updater.backup=created' "$REPORT"
+grep -Fqx 'updater.rollback=not-needed' "$REPORT"
+grep -Fqx 'updater.last_result=installed' "$REPORT"
 ! grep -Fq '/system/valid' "$REPORT"
 ! grep -Fq 'relative-is-invalid' "$REPORT"
 
