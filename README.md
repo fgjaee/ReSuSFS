@@ -1,9 +1,9 @@
 # Sus'AF
 
-[![Build Status](https://github.com/fgjaee/ReSuSFS/actions/workflows/release.yml/badge.svg?branch=susaf-dev)](https://github.com/fgjaee/ReSuSFS/actions/workflows/release.yml)
-[![Latest Release](https://img.shields.io/github/v/release/fgjaee/ReSuSFS?label=Latest%20Release&color=00aa00)](https://github.com/fgjaee/ReSuSFS/releases)
-[![Downloads](https://img.shields.io/github/downloads/fgjaee/ReSuSFS/total?label=Downloads&color=00aa00)](https://github.com/fgjaee/ReSuSFS/releases)
-[![GitHub License](https://img.shields.io/github/license/fgjaee/ReSuSFS?logo=gnu)](/LICENSE)
+[![Build Status](https://github.com/fgjaee/SusAF-/actions/workflows/release.yml/badge.svg?branch=susaf-dev)](https://github.com/fgjaee/SusAF-/actions/workflows/release.yml)
+[![Latest Release](https://img.shields.io/github/v/release/fgjaee/SusAF-?label=Latest%20Release&color=00aa00)](https://github.com/fgjaee/SusAF-/releases)
+[![Downloads](https://img.shields.io/github/downloads/fgjaee/SusAF-/total?label=Downloads&color=00aa00)](https://github.com/fgjaee/SusAF-/releases)
+[![GitHub License](https://img.shields.io/github/license/fgjaee/SusAF-?logo=gnu)](/LICENSE)
 [![SuSFS](https://img.shields.io/badge/SuSFS-4CAF50?&logo=gitlab&logoColor=white)](https://gitlab.com/simonpunk/susfs4ksu)
 [![KernelSU](https://img.shields.io/badge/KernelSU-000000?&logo=github&logoColor=white)](https://github.com/tiann/KernelSU)
 [![ReSukiSU](https://img.shields.io/badge/ReSukiSU-E91E63?&logo=github&logoColor=white)](https://github.com/ReSukiSU/ReSukiSU)
@@ -13,7 +13,7 @@ Sus'AF is a [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)-based [KernelSU
 > [!WARNING]
 > Sus'AF is currently a development build. Do not treat it as a stable daily-driver release until the prerelease checklist and device tests are complete.
 
-Current test build: **v0.1.0-dev.2**. Installation is non-interactive; there
+Current test build: **v0.1.0-dev.3**. Installation is non-interactive; there
 are no Volume Up/Down choices.
 
 The remaining release gate is the [device smoke test](docs/DEVICE_SMOKE_TEST.md).
@@ -24,7 +24,7 @@ The remaining release gate is the [device smoke test](docs/DEVICE_SMOKE_TEST.md)
 
 ## Install
 
-1. Download the [latest Sus'AF release](https://github.com/fgjaee/ReSuSFS/releases/latest)
+1. Download the [latest Sus'AF release](https://github.com/fgjaee/SusAF-/releases/latest)
 2. Flash the zip in KernelSU Manager
 3. Reboot
 4. Strong hiding is applied automatically, no setup needed
@@ -180,15 +180,18 @@ Refresh and Export actions.
 ## Secure SuSFS userspace updates
 
 Installation, the module-manager action, and the WebUI update control use the
-same fail-closed updater. Each Sus'AF release pins an immutable source commit
-and SHA-256 digest in `update-manifest.properties`; a moving branch cannot
-silently change the executable delivered by an existing release.
+same fail-closed updater. Each Sus'AF release bundles the executable pinned to
+an immutable source commit and SHA-256 digest in `update-manifest.properties`;
+a moving branch cannot silently change the executable delivered by an existing
+release, and installation does not require a live download.
 
-The updater downloads into a private state directory without disabling TLS
-checks, verifies the digest and AArch64 ELF identity, probes the kernel SuSFS
-version/variant, then installs with a same-directory atomic rename. A verified
-working binary is retained for rollback. Source, hashes, probe results, backup,
-rollback, and final status appear on the Diagnostics page.
+The updater prefers the bundled copy and uses the pinned HTTPS URL only as a
+recovery fallback. It verifies the digest and AArch64 ELF identity, probes the
+kernel SuSFS version/variant, then installs with a same-directory atomic rename.
+The module-local verified copy remains usable if a root-manager update removes
+the global command. A verified working binary is retained for rollback. Source,
+hashes, probe results, backup, rollback, and final status appear on the
+Diagnostics page.
 
 ## Backup and share your config
 
@@ -206,7 +209,7 @@ oversized archives are rejected.
 
 Report Sus'AF bugs and follow development in this fork:
 
-- **Issues:** [Sus'AF issue tracker](https://github.com/fgjaee/ReSuSFS/issues)
+- **Issues:** [Sus'AF issue tracker](https://github.com/fgjaee/SusAF-/issues)
 
 ## Credits
 

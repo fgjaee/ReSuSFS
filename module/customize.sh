@@ -42,6 +42,11 @@ install_missing_defaults "$CONFIG_DIR" "$PERSISTENT_DIR" || exit 1
 
 rm -rf "$CONFIG_DIR"
 
+[ -f "$MODPATH/bin/ksu_susfs" ] && [ ! -L "$MODPATH/bin/ksu_susfs" ] || {
+	ui_print "[!] The bundled ksu_susfs binary is missing or unsafe"
+	exit 1
+}
+chmod 755 "$MODPATH/bin/ksu_susfs" || exit 1
 update_susfs || exit 1
 
 chmod 755 "$MODPATH/SusAF.sh" "$MODPATH/ReSuSFS.sh"

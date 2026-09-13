@@ -169,8 +169,8 @@ update_susfs() {
 	local module_root="${MODPATH:-${MODDIR:-$MODULE_DIR}}"
 	local manifest="${SUSAF_UPDATE_MANIFEST:-$module_root/update-manifest.properties}"
 	local schema component repository commit artifact expected abi min_version url
-	local arch state_dir candidate destination install_temp backup backup_temp
-	local actual current_sha installed_sha backup_valid=0
+	local arch state_dir candidate destination install_temp backup backup_temp bundled
+	local actual current_sha installed_sha bundled_sha backup_valid=0
 
 	updater_prepare_report || {
 		echo "[!] Could not create private updater report"
@@ -221,6 +221,13 @@ update_susfs() {
 		updater_finish unsupported-architecture
 		return 1
 	fi
+	if [ ! -e "$DEST_BIN_DIR" ]; then
+		mkdir -p "$DEST_BIN_DIR" 2>/dev/null || {
+			updater_finish destination-directory-failed
+			return 1
+		}
+		chmod 755 "$DEST_BIN_DIR" 2>/dev/null
+	fi
 	if [ ! -d "$DEST_BIN_DIR" ] || [ -L "$DEST_BIN_DIR" ]; then
 		updater_finish unsafe-destination-directory
 		return 1
@@ -261,12 +268,26 @@ update_susfs() {
 		return 0
 	fi
 
-	if ! download_file "$url" "$candidate"; then
-		updater_report "verification=not-performed"
-		updater_report "backup=unchanged"
-		updater_report "rollback=not-needed"
-		updater_finish download-failed
-		return 1
+	bundled="${SUSAF_BUNDLED_SUSFS_BIN:-$module_root/bin/ksu_susfs}"
+	if [ -f "$bundled" ] && [ ! -L "$bundled" ]; then
+		bundled_sha=$(updater_sha256 "$bundled" 2>/dev/null) || bundled_sha=unavailable
+		if [ "$bundled_sha" = "$expected" ] && cp "$bundled" "$candidate"; then
+			chmod 600 "$candidate" 2>/dev/null
+			updater_report "candidate_source=bundled"
+		else
+			updater_report "bundled_verification=failed"
+			rm -f "$candidate"
+		fi
+	fi
+	if [ ! -s "$candidate" ]; then
+		updater_report "candidate_source=download"
+		if ! download_file "$url" "$candidate"; then
+			updater_report "verification=not-performed"
+			updater_report "backup=unchanged"
+			updater_report "rollback=not-needed"
+			updater_finish download-failed
+			return 1
+		fi
 	fi
 	actual=$(updater_sha256 "$candidate" 2>/dev/null) || actual=unavailable
 	updater_report "actual_sha256=$actual"

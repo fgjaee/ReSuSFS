@@ -109,8 +109,10 @@ jobs:
         test "$(sed -n 's/^versionCode=//p' module/module.prop)" = "$(jq -r .versionCode update.json)"
         grep -Eq '^source_commit=[0-9a-f]{40}$' module/update-manifest.properties
         grep -Eq '^sha256=[0-9a-f]{64}$' module/update-manifest.properties
+        EXPECTED_SUSFS_SHA=$(sed -n 's/^sha256=//p' module/update-manifest.properties)
+        test "$(sha256sum module/bin/ksu_susfs | awk '{ print $1 }')" = "$EXPECTED_SUSFS_SHA"
         for metadata_file in update.json module/module.prop module/common/repo.json; do
-          grep -Fq 'fgjaee/ReSuSFS' "$metadata_file"
+          grep -Fq 'fgjaee/SusAF-' "$metadata_file"
         done
 
     - name: Refuse development release
@@ -158,6 +160,7 @@ jobs:
         unzip -p "dist/${ZIP_NAME}.zip" module.prop | grep -Fqx "name=Sus’AF"
         unzip -p "dist/${ZIP_NAME}.zip" update-manifest.properties \
           | grep -Eq '^source_commit=[0-9a-f]{40}$'
+        unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -Fqx 'bin/ksu_susfs'
         unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -Fqx 'webroot/index.html'
         if unzip -Z1 "dist/${ZIP_NAME}.zip" | grep -E '(^/|(^|/)\.\.(/|$)|(^|/)(\.git|node_modules)(/|$))'; then
           echo 'Unsafe or development-only archive path found' >&2

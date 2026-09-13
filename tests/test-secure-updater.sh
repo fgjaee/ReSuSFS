@@ -104,6 +104,17 @@ update_susfs
 grep -Fqx "installed_sha256=$expected" "$SUSAF_UPDATER_REPORT"
 grep -Fqx 'result=already-current' "$SUSAF_UPDATER_REPORT"
 
+# A verified copy bundled with the module installs without network access.
+rm -f "$DEST_BIN_DIR/ksu_susfs" "$TEST_ROOT/download.url"
+SUSAF_BUNDLED_SUSFS_BIN="$TEST_ROOT/candidate"
+export SUSAF_BUNDLED_SUSFS_BIN
+update_susfs
+cmp "$TEST_ROOT/candidate" "$DEST_BIN_DIR/ksu_susfs"
+[ ! -e "$TEST_ROOT/download.url" ]
+grep -Fqx 'candidate_source=bundled' "$SUSAF_UPDATER_REPORT"
+grep -Fqx 'result=installed' "$SUSAF_UPDATER_REPORT"
+unset SUSAF_BUNDLED_SUSFS_BIN
+
 # A digest mismatch never replaces the current binary.
 cp "$DEST_BIN_DIR/ksu_susfs" "$TEST_ROOT/before-mismatch"
 printf 'tampered download\n' > "$TEST_ROOT/tampered"
@@ -160,6 +171,7 @@ grep -Fqx 'result=invalid-manifest' "$SUSAF_UPDATER_REPORT"
 ! grep -Eq '/(main|master|universal-binary)/ksu_susfs_arm64' "$MODULE_DIR/utils.sh" "$MODULE_DIR/update-manifest.properties"
 grep -Fqx 'source_commit=26958b7c3dca487c17227b62a6dd7cf11645b49a' "$MODULE_DIR/update-manifest.properties"
 grep -Fqx 'sha256=8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa' "$MODULE_DIR/update-manifest.properties"
+[ "$(sha256sum "$MODULE_DIR/bin/ksu_susfs" | awk '{ print $1 }')" = 8a626ce3bae27a7bcaa2e7f5f7b91e786ecc57f8e57d19c7856719a89b54b6fa ]
 grep -Fq -- '--force-update)' "$MODULE_DIR/SusAF.sh"
 
 echo "secure-updater tests passed"

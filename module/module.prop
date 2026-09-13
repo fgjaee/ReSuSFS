@@ -1,7 +1,7 @@
 id=susaf
 name=Sus’AF
-version=v0.1.0-dev.2
-versionCode=13
+version=v0.1.0-dev.3
+versionCode=14
 author=fgjaee
-updateJson=https://raw.githubusercontent.com/fgjaee/ReSuSFS/susaf-dev/update.json
+updateJson=https://raw.githubusercontent.com/fgjaee/SusAF-/susaf-dev/update.json
 description=SusFS and KernelSU controls with the Sus'AF WebUI, UserHub, targeted hiding, diagnostics, and safe migration. Development build.

@@ -40,7 +40,7 @@ function openAboutDialog() {
     const repoLink    = document.getElementById('about-repo-link');
     if (authorLink)  authorLink.onclick  = (e) => { e.preventDefault(); linkRedirect('https://github.com/fgjaee'); };
     if (licenseLink) licenseLink.onclick = (e) => { e.preventDefault(); linkRedirect('https://www.gnu.org/licenses/gpl-3.0.html'); };
-    if (repoLink)    repoLink.onclick    = (e) => { e.preventDefault(); linkRedirect('https://github.com/fgjaee/ReSuSFS'); };
+    if (repoLink)    repoLink.onclick    = (e) => { e.preventDefault(); linkRedirect('https://github.com/fgjaee/SusAF-'); };
 
     exec(`cat ${moduleDirectory}/module.prop`)
         .then(({ errno, stdout }) => {
@@ -124,7 +124,7 @@ function refreshLogTerminal() {
 function controlPanelEventlistener() {
     const controlPanel = {
         "language-container": openLanguageMenu,
-        "github-issues": () => linkRedirect('https://github.com/fgjaee/ReSuSFS/issues/new'),
+        "github-issues": () => linkRedirect('https://github.com/fgjaee/SusAF-/issues/new'),
         "export": exportConfig,
         "restore": restoreConfig,
         "view-webui-log": openLogViewer,

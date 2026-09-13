@@ -1,5 +1,5 @@
 import { exec } from 'kernelsu-alt';
-import { basePath, moduleDirectory, filePaths, runSusAF, updateUIVisibility, linkRedirect } from '../../utils/util.js';
+import { basePath, moduleDirectory, filePaths, runSusAF, updateUIVisibility } from '../../utils/util.js';
 import { getString } from '../../utils/language.js';
 import { exportConfig, restoreConfig } from '../../utils/backup.js';
 
@@ -123,9 +123,16 @@ async function updateStatus() {
 }
 
 async function getSusfsBin() {
-    const result = await exec(`grep '^SUSFS_BIN=' "${moduleDirectory}/SusAF.sh" | head -n1 | cut -d= -f2`);
-    const path = result.errno === 0 ? result.stdout.trim() : '';
-    return path || '/data/adb/ksu/bin/ksu_susfs';
+    const candidates = [
+        '/data/adb/ksu/bin/ksu_susfs',
+        '/data/adb/ap/bin/ksu_susfs',
+        `${moduleDirectory}/bin/ksu_susfs`,
+    ];
+    for (const candidate of candidates) {
+        const result = await exec(`[ -x "${candidate}" ]`);
+        if (result.errno === 0) return candidate;
+    }
+    return candidates[0];
 }
 
 /**
@@ -154,15 +161,9 @@ function setupBackupCard() {
     if (restoreBtn) restoreBtn.onclick = () => restoreConfig();
 }
 
-function setupTelegramHint() {
-    const hint = document.getElementById('telegram-hint');
-    if (hint) hint.onclick = () => linkRedirect('https://github.com/fgjaee/ReSuSFS/issues');
-}
-
 export function mount() {
     setupStatusBox();
     setupBackupCard();
-    setupTelegramHint();
 
     const actionBtn = document.getElementById('action-btn');
     const forceUpdateButton = document.getElementById('force-update-btn');

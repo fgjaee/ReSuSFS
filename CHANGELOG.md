@@ -3,6 +3,15 @@
 This changelog covers Sus'AF development. Upstream history remains available in
 Git history and the upstream project; it is not repeated here.
 
+## v0.1.0-dev.3 — 2026-09-13
+
+- Bundled the release-pinned, digest-verified `ksu_susfs` binary so installation
+  and recovery no longer depend on a live download.
+- Added a module-local executable fallback and support for both KernelSU and
+  APatch binary directories, preventing a missing global copy from breaking
+  boot scripts or the WebUI status check.
+- Removed the leftover Telegram prompt from the WebUI home page.
+
 ## v0.1.0-dev.2 — 2026-09-12
 
 - Removed the timed Volume Up/Down installer prompts. Existing configuration
