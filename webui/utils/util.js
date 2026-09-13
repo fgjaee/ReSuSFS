@@ -129,6 +129,7 @@ export function runSusAF(...args) {
     const FabContainer = document.querySelector(config.container);
     const closeBtn = document.getElementById('close-terminal');
     const rebootTerminalBtn = document.getElementById('reboot-terminal-btn');
+    let receivedOutput = false;
 
     closeBtn.onclick = () => closeTerminal();
     rebootTerminalBtn.onclick = () => document.getElementById('reboot-dialog')?.show();
@@ -142,6 +143,7 @@ export function runSusAF(...args) {
         output.stdout.on('data', (data) => appendOutput(data));
         output.stderr.on('data', (data) => appendOutput(data));
         output.on('exit', () => {
+            if (!receivedOutput) appendOutput(getString('action_no_output'));
             if (isTerminalOpen) {
                 closeBtn.classList.add('show');
                 rebootTerminalBtn.classList.add('show');
@@ -152,6 +154,7 @@ export function runSusAF(...args) {
     }
 
     const appendOutput = (output) => {
+        receivedOutput = true;
         const p = document.createElement('p');
         p.className = 'action-terminal-output';
         p.textContent = output;

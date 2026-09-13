@@ -39,6 +39,7 @@ merge_schedule_defaults "$CONFIG_DIR/scripts_postfs.txt" "$PERSISTENT_DIR/script
 merge_schedule_defaults "$CONFIG_DIR/scripts_bootcompleted.txt" "$PERSISTENT_DIR/scripts_bootcompleted.txt" || exit 1
 install_packaged_builtins "$CONFIG_DIR/scripts" "$PERSISTENT_DIR/scripts" || exit 1
 install_missing_defaults "$CONFIG_DIR" "$PERSISTENT_DIR" || exit 1
+repair_oversized_cmdline_bootconfig "$CONFIG_DIR/cmdline_or_bootconfig.txt" || exit 1
 
 rm -rf "$CONFIG_DIR"
 
@@ -74,5 +75,7 @@ archive_legacy_sources || {
 	ui_print "[!] Legacy configuration was migrated but could not be archived; it remains in its original location"
 	exit 1
 }
+
+remove_generated_kstat_entries || exit 1
 
 # EOF

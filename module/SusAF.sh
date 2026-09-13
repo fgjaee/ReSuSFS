@@ -135,7 +135,7 @@ apply_list() {
 		rm -f "$tmp"
 	fi
 
-	list=$(read_list "$file") || return
+	list=$(read_list "$file" 2>/dev/null) || list=
 	[ -z "$list" ] && return
 	echo "$list" | while IFS= read -r p; do
 		if [ "$mode" = "1" ] && [ ! -e "$p" ]; then echo "[!] skip missing path: $p"; continue; fi
@@ -185,13 +185,18 @@ apply_sus_maps() { [ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/sus_maps.
 apply_kstat() {
 	mode="$1"
 	[ -n "$2" ] && { append_to_default "$PERSISTENT_DIR/kstat_paths.txt" "$2" || return 1; }
-	file="$PERSISTENT_DIR/kstat_paths.txt"
-	list=$(read_list "$file") || return
-	[ -z "$list" ] && return
+	file="${3:-$PERSISTENT_DIR/kstat_paths.txt}"
+	list=$(read_list "$file" 2>/dev/null) || list=
+	[ -z "$list" ] && {
+		echo "[*] no Sus Kstat entries configured"
+		echo "[*] nothing applied"
+		return 0
+	}
 	echo "$list" | while IFS= read -r line; do
 		path=$(echo "$line" | awk '{print $1}')
 		[ -z "$path" ] && continue
-		args=$(echo "$line" | cut -d' ' -f2-)
+		[ -e "$path" ] || { echo "[!] skip missing path: $path"; continue; }
+		args=$(printf '%s\n' "$line" | sed 's/^[^[:space:]]*[[:space:]]*//')
 		case "$mode" in
 			add)
 				if [ -n "$args" ]; then
@@ -212,12 +217,23 @@ apply_kstat() {
 
 apply_kstat_add() { apply_kstat add "$1"; }
 apply_kstat_update() { apply_kstat update "$1"; }
+apply_kstat_add_direct() {
+	file="$1"
+	[ -n "$file" ] || { echo "[x] no Sus Kstat file specified"; return 1; }
+	[ -f "$file" ] && [ ! -L "$file" ] || { echo "[x] invalid Sus Kstat file: $file"; return 1; }
+	[ -r "$file" ] || { echo "[x] Sus Kstat file not readable: $file"; return 1; }
+	apply_kstat add "" "$file"
+}
 
 apply_open_redirect() {
 	[ -n "$1" ] && { append_to_default "$PERSISTENT_DIR/open_redirect.txt" "$1" || return 1; }
 	file="$PERSISTENT_DIR/open_redirect.txt"
-	list=$(read_list "$file") || return
-	[ -z "$list" ] && return
+	list=$(read_list "$file" 2>/dev/null) || list=
+	[ -z "$list" ] && {
+		echo "[*] Open Redirect has no configured entries"
+		echo "[*] this optional feature is off; nothing applied"
+		return 0
+	}
 	echo "$list" | while IFS= read -r line; do
 		target=$(echo "$line" | awk '{print $1}')
 		redirect=$(echo "$line" | awk '{print $2}')
@@ -282,6 +298,12 @@ apply_cmdline_bootconfig_direct() {
 	[ -f "$file" ] && [ ! -L "$file" ] || { echo "[x] invalid cmdline/bootconfig file: $file"; return 1; }
 	[ -r "$file" ] || { echo "[x] cmdline/bootconfig file not readable: $file"; return 1; }
 	[ -s "$file" ] || return
+	list=$(read_list "$file" 2>/dev/null) || list=
+	[ -n "$list" ] || {
+		echo "[*] no custom cmdline/bootconfig entries configured"
+		echo "[*] the fresh sanitized boot snapshot is applied automatically"
+		return 0
+	}
 	echo "[>] set_cmdline_or_bootconfig $file"
 	susfs set_cmdline_or_bootconfig "$file"
 }
@@ -363,6 +385,7 @@ show_help () {
 	printf " --apply-sus-paths-loop-direct <file> \tapply a generated list without saving it\n"
 	printf " --apply-sus-maps [file] \t\tadd_sus_map from list\n"
 	printf " --apply-kstat-add [file] \t\tstage add_sus_kstat from list\n"
+	printf " --apply-kstat-add-direct <file> \tstage generated kstat data without saving it\n"
 	printf " --apply-kstat-update [file] \t\tcommit update_sus_kstat from list\n"
 	printf " --apply-open-redirect [file] \t\tadd_open_redirect from list\n"
 	printf " --apply-uname [file] \t\t\tset_uname from config\n"
@@ -394,6 +417,7 @@ case "$1" in
 	--apply-sus-paths-loop-direct) apply_sus_paths_loop_direct "$2"; exit ;;
 	--apply-sus-maps) apply_sus_maps "$2"; exit ;;
 	--apply-kstat-add) apply_kstat_add "$2"; exit ;;
+	--apply-kstat-add-direct) apply_kstat_add_direct "$2"; exit ;;
 	--apply-kstat-update) apply_kstat_update "$2"; exit ;;
 	--apply-open-redirect) apply_open_redirect "$2"; exit ;;
 	--apply-uname) apply_uname "$2"; exit ;;

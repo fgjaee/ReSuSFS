@@ -111,6 +111,77 @@ install_missing_defaults() {
 	done
 }
 
+repair_oversized_cmdline_bootconfig() {
+	local template="$1"
+	local config="$PERSISTENT_DIR/cmdline_or_bootconfig.txt"
+	local limit="${SUSAF_BOOTCONFIG_MAX_BYTES:-8191}"
+	local size stamp backup temp
+
+	[ -e "$config" ] || return 0
+	[ -f "$config" ] && [ ! -L "$config" ] || {
+		_install_note "[!] Refusing non-regular cmdline/bootconfig config: $config"
+		return 1
+	}
+	size=$(wc -c < "$config" 2>/dev/null | tr -d '[:space:]')
+	case "$size" in
+		''|*[!0-9]*) _install_note "[!] Could not measure $config"; return 1 ;;
+	esac
+	[ "$size" -gt "$limit" ] || return 0
+	[ -f "$template" ] && [ ! -L "$template" ] || {
+		_install_note "[!] Packaged cmdline/bootconfig template is unavailable"
+		return 1
+	}
+
+	stamp="${SUSAF_MIGRATION_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
+	backup="$PERSISTENT_DIR/migration/installer-$stamp-$$/repaired-config/cmdline_or_bootconfig.txt"
+	temp="${config}.repair.$$"
+	mkdir -p "$(dirname "$backup")" || return 1
+	cp -p "$config" "$backup" || return 1
+	cp "$template" "$temp" || return 1
+	chmod 600 "$backup" "$temp" 2>/dev/null
+	mv "$temp" "$config" || {
+		rm -f "$temp"
+		return 1
+	}
+	_install_note "[+] Archived oversized cmdline/bootconfig data ($size bytes) and restored a clean template"
+}
+
+remove_generated_kstat_entries() {
+	local config="$PERSISTENT_DIR/kstat_paths.txt"
+	local stamp backup temp
+
+	[ -e "$config" ] || return 0
+	[ -f "$config" ] && [ ! -L "$config" ] || {
+		_install_note "[!] Refusing non-regular Sus Kstat config: $config"
+		return 1
+	}
+	temp="${config}.repair.$$"
+	awk '
+	function generated_module_entry(    i) {
+		if ($1 != "/data/adb/ReSuSFS" && $1 != "/data/adb/SusAF") return 0
+		if (NF != 13) return 0
+		for (i = 2; i <= NF; i++) if ($i != "default") return 0
+		return 1
+	}
+	!generated_module_entry() { print }
+	' "$config" > "$temp" || {
+		rm -f "$temp"
+		return 1
+	}
+	if cmp -s "$config" "$temp"; then
+		rm -f "$temp"
+		return 0
+	fi
+
+	stamp="${SUSAF_MIGRATION_TIMESTAMP:-$(date +%Y%m%d_%H%M%S)}"
+	backup="$PERSISTENT_DIR/migration/installer-$stamp-$$/repaired-config/kstat_paths.txt"
+	mkdir -p "$(dirname "$backup")" || { rm -f "$temp"; return 1; }
+	cp -p "$config" "$backup" || { rm -f "$temp"; return 1; }
+	chmod 600 "$backup" "$temp" 2>/dev/null
+	mv "$temp" "$config" || { rm -f "$temp"; return 1; }
+	_install_note "[+] Removed stale generated ReSuSFS/SusAF entries from kstat_paths.txt"
+}
+
 _rewrite_legacy_builtin_schedule() {
 	local schedule="$1"
 	local backup_root="$2"

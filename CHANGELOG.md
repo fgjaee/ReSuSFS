@@ -3,6 +3,18 @@
 This changelog covers Sus'AF development. Upstream history remains available in
 Git history and the upstream project; it is not repeated here.
 
+## v0.1.0-dev.4 — 2026-09-13
+
+- Made empty Open Redirect configuration report that the optional feature is
+  off instead of opening a blank action screen. Silent actions now receive a
+  generic terminal message as a final fallback.
+- Added an upgrade repair that recoverably archives cmdline/bootconfig files
+  larger than the kernel interface's 8,191-byte limit and restores the clean
+  template; normal boot continues to generate a fresh sanitized snapshot.
+- Stopped the built-in Sus Kstat task from appending generated module paths to
+  persistent user configuration. Known generated ReSuSFS/SusAF entries are
+  archived and removed on upgrade, and missing targets are skipped cleanly.
+
 ## v0.1.0-dev.3 — 2026-09-13
 
 - Bundled the release-pinned, digest-verified `ksu_susfs` binary so installation

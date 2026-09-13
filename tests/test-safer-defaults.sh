@@ -138,11 +138,13 @@ cat > "$TEST_ROOT/bin/SusAF" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$SUSAF_FAKE_CLI_LOG"
 [ "$1" != "--apply-sus-paths-loop" ] || cp "$2" "$SUSAF_FAKE_PATH_LIST"
+[ "$1" != "--apply-kstat-add-direct" ] || cp "$2" "$SUSAF_FAKE_KSTAT_LIST"
 EOF
 chmod 755 "$TEST_ROOT/bin/SusAF"
 SUSAF_FAKE_CLI_LOG="$TEST_ROOT/cli.log"
 SUSAF_FAKE_PATH_LIST="$TEST_ROOT/path-list"
-export SUSAF_FAKE_CLI_LOG SUSAF_FAKE_PATH_LIST
+SUSAF_FAKE_KSTAT_LIST="$TEST_ROOT/kstat-list"
+export SUSAF_FAKE_CLI_LOG SUSAF_FAKE_PATH_LIST SUSAF_FAKE_KSTAT_LIST
 : > "$SUSAF_FAKE_CLI_LOG"
 
 SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
@@ -153,5 +155,11 @@ SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
 SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
 sh "$MODULE_DIR/configs/scripts/SusAF_apply-sus-paths-loop.sh"
 ! grep -Fq '/dev/pts/' "$SUSAF_FAKE_PATH_LIST"
+
+SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+sh "$MODULE_DIR/configs/scripts/SusAF_apply-kstat-add.sh"
+grep -Fqx -- "--apply-kstat-add-direct $PERSISTENT_DIR/state/kstat.generated.txt" "$SUSAF_FAKE_CLI_LOG"
+grep -Fqx '/data/adb/SusAF default default default default default default default default default default default default' "$SUSAF_FAKE_KSTAT_LIST"
 
 echo "safer-default tests passed"

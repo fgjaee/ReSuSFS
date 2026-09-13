@@ -35,6 +35,7 @@
     <string name="global_cancel">Cancel</string>
     <string name="global_confirm">Confirm</string>
     <string name="global_action">Action</string>
+    <string name="action_no_output">Command finished without producing output.</string>
     <string name="global_unsupported">Unsupported</string>
     <!-- Control Panel -->
     <string name="control_panel_title">Control Panel</string>
@@ -51,11 +52,11 @@
     <string name="susfs_kstat_paths_title">Sus Kstat</string>
     <string name="susfs_kstat_paths_desc">Spoofs file stat info for paths that get bind mounted, staged early and committed late.</string>
     <string name="susfs_open_redirect_title">Open Redirect</string>
-    <string name="susfs_open_redirect_desc">Redirects an opened target path to a user-defined path for a chosen uid scheme.</string>
+    <string name="susfs_open_redirect_desc">Optional. Redirects an opened target path to a user-defined path for a chosen uid scheme. Zero entries means it is off.</string>
     <string name="susfs_uname_title">Uname Spoof</string>
     <string name="susfs_uname_desc">Spoofs the kernel release and version reported to all processes.</string>
     <string name="susfs_cmdline_title">Cmdline / Bootconfig</string>
-    <string name="susfs_cmdline_desc">Spoofs the content of /proc/cmdline or /proc/bootconfig from a prepared file.</string>
+    <string name="susfs_cmdline_desc">Optional custom data. Normal boot applies a freshly generated, sanitized cmdline or bootconfig snapshot.</string>
     <!-- Config box actions -->
     <string name="box_edit">Edit</string>
     <string name="box_apply">Apply</string>

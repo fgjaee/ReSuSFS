@@ -13,7 +13,7 @@ Sus'AF is a [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)-based [KernelSU
 > [!WARNING]
 > Sus'AF is currently a development build. Do not treat it as a stable daily-driver release until the prerelease checklist and device tests are complete.
 
-Current test build: **v0.1.0-dev.3**. Installation is non-interactive; there
+Current test build: **v0.1.0-dev.4**. Installation is non-interactive; there
 are no Volume Up/Down choices.
 
 The remaining release gate is the [device smoke test](docs/DEVICE_SMOKE_TEST.md).
@@ -145,6 +145,7 @@ if [file] is given it is appended (deduped) into the default list, then applied:
  --apply-sus-paths-loop [file] 		add_sus_path_loop from list
  --apply-sus-maps [file] 		add_sus_map from list
  --apply-kstat-add [file] 		stage add_sus_kstat from list
+ --apply-kstat-add-direct <file> 	stage generated kstat data without saving it
  --apply-kstat-update [file] 		commit update_sus_kstat from list
  --apply-open-redirect [file] 		add_open_redirect from list
  --apply-uname [file] 			set_uname from config
