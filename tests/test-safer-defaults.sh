@@ -161,5 +161,6 @@ SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
 sh "$MODULE_DIR/configs/scripts/SusAF_apply-kstat-add.sh"
 grep -Fqx -- "--apply-kstat-add-direct $PERSISTENT_DIR/state/kstat.generated.txt" "$SUSAF_FAKE_CLI_LOG"
 grep -Fqx '/data/adb/SusAF default default default default default default default default default default default default' "$SUSAF_FAKE_KSTAT_LIST"
+! grep -Fq '/system/etc/hosts' "$SUSAF_FAKE_KSTAT_LIST"
 
 echo "safer-default tests passed"

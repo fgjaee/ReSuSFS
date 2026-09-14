@@ -24,7 +24,6 @@ chmod 700 "$STATE_DIR" 2>/dev/null
 trap 'rm -f "$TEMP_FILE"' EXIT HUP INT TERM
 
 cat > "$TEMP_FILE" << EOF
-/system/etc/hosts 100 default default 64 default default default default default default 1 4096
 /data/local/tmp 100 default default 4096 default default default default default default 8 4096
 /data/adb/SusAF default default default default default default default default default default default default
 EOF

@@ -72,6 +72,15 @@ esac
 EOF
 chmod 755 "$TEST_ROOT/bin/ksud"
 
+# ReSukiSU packages ksud as an executable native library inside its app data.
+MANAGER_KSUD="$TEST_ROOT/data-app/~~install/com.resukisu.resukisu-current/lib/arm64/libksud.so"
+mkdir -p "$(dirname "$MANAGER_KSUD")"
+cp "$TEST_ROOT/bin/ksud" "$MANAGER_KSUD"
+chmod 755 "$MANAGER_KSUD"
+SUSAF_DATA_APP_ROOT="$TEST_ROOT/data-app"
+export SUSAF_DATA_APP_ROOT
+[ "$(resolve_ksud_bin)" = "$MANAGER_KSUD" ]
+
 KSUD_LOG="$TEST_ROOT/ksud.log"
 : > "$KSUD_LOG"
 SUSAF_KSUD_BIN="$TEST_ROOT/bin/ksud"
@@ -82,6 +91,7 @@ apply_kernel_umount_feature "$TEST_ROOT/config"
 
 grep -Fqx 'feature set kernel_umount 1' "$KSUD_LOG"
 grep -Fqx 'mode=enabled' "$TEST_ROOT/feature.report"
+grep -Fqx "binary=$TEST_ROOT/bin/ksud" "$TEST_ROOT/feature.report"
 grep -Fqx 'check=supported' "$TEST_ROOT/feature.report"
 grep -Fqx 'current=enabled' "$TEST_ROOT/feature.report"
 grep -Fqx 'result=ok' "$TEST_ROOT/feature.report"
@@ -100,6 +110,7 @@ done
 ! grep -Fq 'kernel umount wipe' "$KSUD_LOG"
 [ "$(tail -n1 "$KSUD_LOG")" = 'kernel notify-module-mounted' ]
 grep -Fqx 'add=/system/bin/tool|source:KSU|ok' "$TEST_ROOT/mounts.report"
+grep -Fqx "binary=$TEST_ROOT/bin/ksud" "$TEST_ROOT/mounts.report"
 grep -Fqx 'add=/system/etc|module-backed|ok' "$TEST_ROOT/mounts.report"
 grep -Fqx 'add=/vendor/lib|module-overlay|ok' "$TEST_ROOT/mounts.report"
 grep -Fqx 'skip=/system/bin/tool|explicit|duplicate' "$TEST_ROOT/mounts.report"
@@ -147,6 +158,16 @@ set -e
 unset SUSAF_FAKE_FEATURE_CHECK
 [ "$unsupported_status" -eq 0 ]
 grep -Fqx 'result=not-supported' "$TEST_ROOT/unsupported.feature.report"
+
+unset SUSAF_KSUD_BIN
+mkdir -p "$TEST_ROOT/empty-data-app"
+SUSAF_DATA_APP_ROOT="$TEST_ROOT/empty-data-app"
+SUSAF_KERNEL_UMOUNT_FEATURE_REPORT="$TEST_ROOT/unavailable.feature.report"
+export SUSAF_DATA_APP_ROOT SUSAF_KERNEL_UMOUNT_FEATURE_REPORT
+apply_kernel_umount_feature "$TEST_ROOT/config"
+grep -Fqx 'binary=unavailable' "$TEST_ROOT/unavailable.feature.report"
+grep -Fqx 'check=unavailable' "$TEST_ROOT/unavailable.feature.report"
+grep -Fqx 'result=daemon-unavailable' "$TEST_ROOT/unavailable.feature.report"
 
 cat > "$TEST_ROOT/bin/SusAF" <<'EOF'
 #!/bin/sh

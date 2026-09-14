@@ -3,6 +3,20 @@
 This changelog covers Sus'AF development. Upstream history remains available in
 Git history and the upstream project; it is not repeated here.
 
+## v0.1.0-dev.5 — 2026-09-14
+
+- Added trusted discovery of manager-packaged KernelSU daemons, including
+  ReSukiSU's executable `libksud.so`, so `kernel_umount` feature control and
+  mount registration no longer depend on a standalone `ksud` in `PATH`.
+- Made kernel-umount reports and the WebUI Diagnostics page show the selected
+  daemon path. An enabled but unreachable interface now marks the snapshot as
+  degraded and distinguishes daemon and interface failures from unsupported
+  kernel functionality.
+- Updated the built-in KernelSU-settings and uname tasks to use the same daemon
+  resolver while preserving uname's existing no-daemon fallback.
+- Removed the hard-coded hosts-file Kstat spoof from the built-in task; mount
+  identity is handled by targeted KernelSU umount registration instead.
+
 ## v0.1.0-dev.4 — 2026-09-13
 
 - Made empty Open Redirect configuration report that the optional feature is

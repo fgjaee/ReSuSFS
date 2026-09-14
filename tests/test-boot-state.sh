@@ -82,8 +82,10 @@ printf '%s\n' 'Linux version 6.1.99-android14-test builder@host' > "$TEST_ROOT/p
 printf '%s\n' '12345678-90ab-cdef-1234-567890abcdef' > "$TEST_ROOT/boot-id"
 
 SUSAF_PERSISTENT_DIR="$TEST_ROOT/persistent" \
+SUSAF_MODULE_DIR="$(dirname "$0")/../module" \
 SUSAF_PROC_VERSION="$TEST_ROOT/proc-version" \
 SUSAF_BOOT_ID="$TEST_ROOT/boot-id" \
+SUSAF_KSUD_BIN="$TEST_ROOT/bin/ksud" \
 SUSAF_CLI_COMMAND="$TEST_ROOT/bin/SusAF" \
 SUSAF_UNAME_CAPTURE="$TEST_ROOT/uname-captured" \
 PATH="$TEST_ROOT/bin:$PATH" \

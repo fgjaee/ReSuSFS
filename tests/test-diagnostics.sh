@@ -170,6 +170,7 @@ grep -Fqx 'module.id=susaf' "$REPORT"
 grep -Fqx 'susfs.status=active' "$REPORT"
 grep -Fqx 'susfs.version=v2.3.0' "$REPORT"
 grep -Fqx 'susfs.feature_count=2' "$REPORT"
+grep -Fqx "kernelsu.binary=$BIN_DIR/ksud" "$REPORT"
 grep -Fqx 'kernel_umount.support=supported' "$REPORT"
 grep -Fqx 'kernel_umount.current=enabled' "$REPORT"
 grep -Fqx 'kernel_umount.candidates=1' "$REPORT"
@@ -198,6 +199,23 @@ grep -Fqx 'updater.last_result=installed' "$REPORT"
 # The boot service must be event-based, not a perpetual metadata writer.
 ! grep -Fq 'while true' "$MODULE_DIR/service.sh"
 ! grep -Eq 'sed .*module\.prop' "$MODULE_DIR/SusAF.sh"
+
+# Enabling kernel_umount without a reachable daemon must not look healthy.
+SUSAF_MODULE_DIR="$MODULE_DIR" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+SUSAF_LEGACY_RESUSFS_DIR="$TEST_ROOT/no-resusfs" \
+SUSAF_LEGACY_SUSFS4KSU_DIR="$TEST_ROOT/no-susfs4ksu" \
+SUSAF_SUSFS_BIN="$BIN_DIR/ksu_susfs" \
+SUSAF_KSUD_BIN="$BIN_DIR/missing-ksud" \
+SUSAF_SETTINGS_BIN="$BIN_DIR/settings" \
+SUSAF_GETPROP_BIN="$BIN_DIR/getprop" \
+SUSAF_PIDOF_BIN="$BIN_DIR/pidof" \
+SUSAF_MOUNTINFO="$TEST_ROOT/mountinfo" \
+SUSAF_BOOTCONFIG_SOURCE="$TEST_ROOT/bootconfig" \
+SUSAF_PROC_VERSION="$TEST_ROOT/proc-version" \
+sh "$MODULE_DIR/SusAF.sh" --diagnostics > "$TEST_ROOT/degraded.stdout"
+grep -Fqx 'overall.status=degraded' "$TEST_ROOT/degraded.stdout"
+grep -Fqx 'kernelsu.binary=unavailable' "$TEST_ROOT/degraded.stdout"
 
 . "$MODULE_DIR/lib/stage-state.sh"
 stage_state_begin test-stage

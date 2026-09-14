@@ -10,6 +10,7 @@ const GROUPS = {
         ['persistent.owner', 'diagnostics_config_owner'],
         ['persistent.mode', 'diagnostics_config_mode'],
         ['kernelsu.version', 'diagnostics_kernelsu_version'],
+        ['kernelsu.binary', 'diagnostics_kernelsu_binary'],
         ['susfs.status', 'diagnostics_susfs_status'],
         ['susfs.binary', 'diagnostics_susfs_binary'],
         ['susfs.version', 'diagnostics_susfs_version'],

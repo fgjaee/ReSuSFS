@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if ! command -v resolve_ksud_bin >/dev/null 2>&1 && [ -r "${MODULE_DIR:-}/lib/ksud.sh" ]; then
+	. "$MODULE_DIR/lib/ksud.sh"
+fi
+
 collect_kernel_umount_candidates() {
 	local mountinfo_file="$1"
 	local output_file="$2"
@@ -106,8 +110,7 @@ kernel_umount_check_feature() {
 
 apply_kernel_umount_feature() {
 	local config_file="${1:-$PERSISTENT_DIR/config.txt}"
-	local ksu_bin="${SUSAF_KSUD_BIN:-ksud}"
-	local mode check desired current report_file
+	local mode check desired current report_file ksu_bin
 	umask 077
 
 	mode=$(get_conf KERNEL_UMOUNT_MODE enabled "$config_file")
@@ -124,11 +127,25 @@ apply_kernel_umount_feature() {
 			;;
 	esac
 
+	ksu_bin=$(resolve_ksud_bin 2>/dev/null) || ksu_bin=""
+	kernel_umount_report "binary=${ksu_bin:-unavailable}"
+	if [ -z "$ksu_bin" ]; then
+		kernel_umount_report "check=unavailable"
+		kernel_umount_report "result=daemon-unavailable"
+		kernel_umount_finish_report
+		return 0
+	fi
+
 	check=$(kernel_umount_check_feature "$ksu_bin")
 	kernel_umount_report "check=$check"
 	case "$check" in
-		unsupported|unavailable)
+		unsupported)
 			kernel_umount_report "result=not-supported"
+			kernel_umount_finish_report
+			return 0
+			;;
+		unavailable)
+			kernel_umount_report "result=interface-unavailable"
 			kernel_umount_finish_report
 			return 0
 			;;
@@ -158,8 +175,7 @@ apply_kernel_umount_mounts() {
 	local config_file="${1:-$PERSISTENT_DIR/config.txt}"
 	local list_file="${2:-$PERSISTENT_DIR/kernel_umount.txt}"
 	local mountinfo_file="${SUSAF_MOUNTINFO:-/proc/1/mountinfo}"
-	local ksu_bin="${SUSAF_KSUD_BIN:-ksud}"
-	local mode auto check report_file candidate_file accepted_file
+	local mode auto check report_file candidate_file accepted_file ksu_bin
 	local target reason line add_count reject_count
 	umask 077
 
@@ -192,11 +208,25 @@ apply_kernel_umount_mounts() {
 			;;
 	esac
 
+	ksu_bin=$(resolve_ksud_bin 2>/dev/null) || ksu_bin=""
+	kernel_umount_report "binary=${ksu_bin:-unavailable}"
+	if [ -z "$ksu_bin" ]; then
+		kernel_umount_report "check=unavailable"
+		kernel_umount_report "result=daemon-unavailable"
+		kernel_umount_finish_report
+		return 0
+	fi
+
 	check=$(kernel_umount_check_feature "$ksu_bin")
 	kernel_umount_report "check=$check"
 	case "$check" in
-		unsupported|unavailable)
+		unsupported)
 			kernel_umount_report "result=not-supported"
+			kernel_umount_finish_report
+			return 0
+			;;
+		unavailable)
+			kernel_umount_report "result=interface-unavailable"
 			kernel_umount_finish_report
 			return 0
 			;;

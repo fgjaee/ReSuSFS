@@ -157,7 +157,7 @@ generate_diagnostics() {
 	local candidates="$state_dir/.diagnostics.mounts.$$"
 	local boot_source boot_format live_error_count generated_error_count
 	local module_status overall susfs_status susfs_version susfs_variant
-	local features feature_count ksu_bin ksu_check ksu_current ksu_version
+	local features feature_count ksu_bin ksu_check ksu_current ksu_version kernel_mode
 	local persistent_owner persistent_mode proc_version uname_release uname_version
 
 	umask 077
@@ -201,12 +201,25 @@ generate_diagnostics() {
 		overall=degraded
 	fi
 
-	ksu_bin="${SUSAF_KSUD_BIN:-ksud}"
-	ksu_check=$(kernel_umount_check_feature "$ksu_bin")
-	ksu_current=$("$ksu_bin" feature get kernel_umount 2>/dev/null | awk -F': ' '$1 == "Status" { print $2; exit }') || ksu_current="unknown"
-	[ -n "$ksu_current" ] || ksu_current=unknown
-	ksu_version=$("$ksu_bin" --version 2>/dev/null | sed -n '1p') || ksu_version="unavailable"
-	[ -n "$ksu_version" ] || ksu_version=unavailable
+	ksu_bin=$(resolve_ksud_bin 2>/dev/null) || ksu_bin=""
+	if [ -n "$ksu_bin" ]; then
+		ksu_check=$(kernel_umount_check_feature "$ksu_bin")
+		ksu_current=$("$ksu_bin" feature get kernel_umount 2>/dev/null | awk -F': ' '$1 == "Status" { print $2; exit }') || ksu_current="unknown"
+		[ -n "$ksu_current" ] || ksu_current=unknown
+		ksu_version=$("$ksu_bin" --version 2>/dev/null | sed -n '1p') || ksu_version="unavailable"
+		[ -n "$ksu_version" ] || ksu_version=unavailable
+	else
+		ksu_check=unavailable
+		ksu_current=unknown
+		ksu_version=unavailable
+	fi
+	kernel_mode=$(get_conf KERNEL_UMOUNT_MODE enabled "$PERSISTENT_DIR/config.txt")
+	if [ "$module_status" != disabled ] && [ "$kernel_mode" = enabled ]; then
+		case "$ksu_check" in
+			supported|managed) ;;
+			*) overall=degraded ;;
+		esac
+	fi
 
 	: > "$candidates"
 	collect_kernel_umount_candidates "$mountinfo_file" "$candidates" 2>/dev/null || : > "$candidates"
@@ -248,7 +261,8 @@ generate_diagnostics() {
 		diagnostics_put susfs.features "$features"
 
 		diagnostics_put kernelsu.version "$ksu_version"
-		diagnostics_put kernel_umount.configured "$(get_conf KERNEL_UMOUNT_MODE enabled "$PERSISTENT_DIR/config.txt")"
+		diagnostics_put kernelsu.binary "${ksu_bin:-unavailable}"
+		diagnostics_put kernel_umount.configured "$kernel_mode"
 		diagnostics_put kernel_umount.auto "$(get_conf AUTO_KERNEL_UMOUNT 1 "$PERSISTENT_DIR/config.txt")"
 		diagnostics_put kernel_umount.support "$ksu_check"
 		diagnostics_put kernel_umount.current "$ksu_current"

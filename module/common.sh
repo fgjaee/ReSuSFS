@@ -21,3 +21,7 @@ LEGACY_MODULE_DIR="${SUSAF_LEGACY_MODULE_DIR:-/data/adb/modules/ReSuSFS}"
 
 SUSAF_CLI="$DEST_BIN_DIR/SusAF"
 RESUSFS_COMPAT_CLI="$DEST_BIN_DIR/ReSuSFS"
+
+if [ -r "$MODULE_DIR/lib/ksud.sh" ]; then
+	. "$MODULE_DIR/lib/ksud.sh"
+fi

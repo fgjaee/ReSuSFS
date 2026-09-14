@@ -109,6 +109,7 @@
     <string name="diagnostics_config_owner">Config owner</string>
     <string name="diagnostics_config_mode">Config permissions</string>
     <string name="diagnostics_kernelsu_version">KernelSU version</string>
+    <string name="diagnostics_kernelsu_binary">KernelSU daemon</string>
     <string name="diagnostics_susfs_status">SuSFS status</string>
     <string name="diagnostics_susfs_binary">SuSFS binary</string>
     <string name="diagnostics_susfs_version">SuSFS version</string>

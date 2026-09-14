@@ -46,7 +46,9 @@ manager, SuSFS version, tester, date, and result for every section.
 
 ## Kernel umount and hiding
 
-- Record whether `ksud feature check kernel_umount` is supported.
+- Refresh Diagnostics and confirm `kernelsu.binary` identifies the selected
+  standalone `ksud` or known manager-native `libksud.so` before recording
+  whether `feature check kernel_umount` is supported.
 - With mode `unchanged`, confirm Sus'AF does not change the feature.
 - With mode `enabled`, confirm only validated KSU/module-backed mountpoints and
   explicit entries are registered, followed by module-mounted notification.
