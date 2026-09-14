@@ -163,7 +163,14 @@ remove_generated_kstat_entries() {
 		for (i = 2; i <= NF; i++) if ($i != "default") return 0
 		return 1
 	}
-	!generated_module_entry() { print }
+	function legacy_hosts_entry() {
+		return NF == 13 && $1 == "/system/etc/hosts" && $2 == "100" &&
+			$3 == "default" && $4 == "default" && $5 == "64" &&
+			$6 == "default" && $7 == "default" && $8 == "default" &&
+			$9 == "default" && $10 == "default" && $11 == "default" &&
+			$12 == "1" && $13 == "4096"
+	}
+	!generated_module_entry() && !legacy_hosts_entry() { print }
 	' "$config" > "$temp" || {
 		rm -f "$temp"
 		return 1
@@ -179,7 +186,7 @@ remove_generated_kstat_entries() {
 	cp -p "$config" "$backup" || { rm -f "$temp"; return 1; }
 	chmod 600 "$backup" "$temp" 2>/dev/null
 	mv "$temp" "$config" || { rm -f "$temp"; return 1; }
-	_install_note "[+] Removed stale generated ReSuSFS/SusAF entries from kstat_paths.txt"
+	_install_note "[+] Archived and removed stale generated Kstat entries"
 }
 
 _rewrite_legacy_builtin_schedule() {

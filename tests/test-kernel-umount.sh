@@ -61,6 +61,10 @@ case "$1 $2 $3" in
 		;;
 	"kernel umount add")
 		printf '%s\n' "$*" >> "$SUSAF_FAKE_KSUD_LOG"
+		[ "${SUSAF_FAKE_ADD_FAIL:-}" != "$4" ]
+		;;
+	"kernel umount list")
+		printf '%s\n' "${SUSAF_FAKE_UMOUNT_LIST_JSON:-[]}"
 		;;
 	"kernel notify-module-mounted ")
 		printf '%s\n' "$*" >> "$SUSAF_FAKE_KSUD_LOG"
@@ -85,8 +89,9 @@ KSUD_LOG="$TEST_ROOT/ksud.log"
 : > "$KSUD_LOG"
 SUSAF_KSUD_BIN="$TEST_ROOT/bin/ksud"
 SUSAF_FAKE_KSUD_LOG="$KSUD_LOG"
+SUSAF_FAKE_UMOUNT_LIST_JSON='[{"path":"/system/etc","flags":2}]'
 SUSAF_KERNEL_UMOUNT_FEATURE_REPORT="$TEST_ROOT/feature.report"
-export SUSAF_KSUD_BIN SUSAF_FAKE_KSUD_LOG SUSAF_KERNEL_UMOUNT_FEATURE_REPORT
+export SUSAF_KSUD_BIN SUSAF_FAKE_KSUD_LOG SUSAF_FAKE_UMOUNT_LIST_JSON SUSAF_KERNEL_UMOUNT_FEATURE_REPORT
 apply_kernel_umount_feature "$TEST_ROOT/config"
 
 grep -Fqx 'feature set kernel_umount 1' "$KSUD_LOG"
@@ -102,23 +107,44 @@ SUSAF_KERNEL_UMOUNT_REPORT="$TEST_ROOT/mounts.report"
 export SUSAF_MOUNTINFO SUSAF_KERNEL_UMOUNT_REPORT
 apply_kernel_umount_mounts "$TEST_ROOT/config" "$TEST_ROOT/kernel_umount.txt"
 
-for target in /system/bin/tool /system/etc /vendor/lib /product/app /manual; do
+for target in /system/bin/tool /vendor/lib /product/app /manual; do
 	grep -Fqx "kernel umount add $target --flags 2" "$KSUD_LOG"
 done
-[ "$(grep -c '^kernel umount add ' "$KSUD_LOG")" -eq 5 ]
+[ "$(grep -c '^kernel umount add ' "$KSUD_LOG")" -eq 4 ]
 [ "$(grep -c '^kernel umount add /system/bin/tool ' "$KSUD_LOG")" -eq 1 ]
 ! grep -Fq 'kernel umount wipe' "$KSUD_LOG"
 [ "$(tail -n1 "$KSUD_LOG")" = 'kernel notify-module-mounted' ]
 grep -Fqx 'add=/system/bin/tool|source:KSU|ok' "$TEST_ROOT/mounts.report"
 grep -Fqx "binary=$TEST_ROOT/bin/ksud" "$TEST_ROOT/mounts.report"
-grep -Fqx 'add=/system/etc|module-backed|ok' "$TEST_ROOT/mounts.report"
+grep -Fqx 'skip=/system/etc|module-backed|already-present' "$TEST_ROOT/mounts.report"
 grep -Fqx 'add=/vendor/lib|module-overlay|ok' "$TEST_ROOT/mounts.report"
 grep -Fqx 'skip=/system/bin/tool|explicit|duplicate' "$TEST_ROOT/mounts.report"
-grep -Fqx 'reject=/missing|explicit|not-mounted' "$TEST_ROOT/mounts.report"
+grep -Fqx 'skip=/missing|explicit|not-mounted' "$TEST_ROOT/mounts.report"
 grep -Fqx 'reject=relative|explicit|unsafe-path' "$TEST_ROOT/mounts.report"
 grep -Fqx 'reject=/|explicit|unsafe-path' "$TEST_ROOT/mounts.report"
-grep -Fqx 'added=5' "$TEST_ROOT/mounts.report"
+grep -Fqx 'added=4' "$TEST_ROOT/mounts.report"
+grep -Fqx 'existing=1' "$TEST_ROOT/mounts.report"
+grep -Fqx 'inactive=1' "$TEST_ROOT/mounts.report"
+grep -Fqx 'rejected=4' "$TEST_ROOT/mounts.report"
+grep -Fqx 'failed=0' "$TEST_ROOT/mounts.report"
 grep -Fqx 'notify=ok' "$TEST_ROOT/mounts.report"
+grep -Fqx 'result=ok' "$TEST_ROOT/mounts.report"
+
+# A real add failure is separate from invalid and already-registered targets.
+: > "$KSUD_LOG"
+SUSAF_FAKE_ADD_FAIL=/manual
+SUSAF_FAKE_UMOUNT_LIST_JSON='[]'
+SUSAF_KERNEL_UMOUNT_REPORT="$TEST_ROOT/partial.report"
+export SUSAF_FAKE_ADD_FAIL SUSAF_FAKE_UMOUNT_LIST_JSON SUSAF_KERNEL_UMOUNT_REPORT
+apply_kernel_umount_mounts "$TEST_ROOT/config" "$TEST_ROOT/kernel_umount.txt"
+grep -Fq 'add=/manual|explicit|failed|' "$TEST_ROOT/partial.report"
+grep -Fqx 'failed=1' "$TEST_ROOT/partial.report"
+grep -Fqx 'inactive=1' "$TEST_ROOT/partial.report"
+grep -Fqx 'rejected=4' "$TEST_ROOT/partial.report"
+grep -Fqx 'result=partial' "$TEST_ROOT/partial.report"
+unset SUSAF_FAKE_ADD_FAIL
+SUSAF_FAKE_UMOUNT_LIST_JSON='[{"path":"/system/etc","flags":2}]'
+export SUSAF_FAKE_UMOUNT_LIST_JSON
 
 cat > "$TEST_ROOT/config.disabled" <<'EOF'
 KERNEL_UMOUNT_MODE=disabled

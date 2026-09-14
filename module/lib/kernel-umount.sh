@@ -74,6 +74,25 @@ kernel_umount_target_is_mounted() {
 	awk -v target="$target" '$5 == target { found=1; exit } END { exit !found }' "$mountinfo_file"
 }
 
+kernel_umount_target_is_registered() {
+	local list_file="$1"
+	local target="$2"
+	local escaped
+
+	[ -f "$list_file" ] && [ -r "$list_file" ] || return 1
+	escaped=$(printf '%s' "$target" | sed 's/\\/\\\\/g; s/"/\\"/g')
+	grep -Fq "\"path\":\"$escaped\"" "$list_file" 2>/dev/null
+}
+
+kernel_umount_error_summary() {
+	local error_file="$1"
+	local summary
+
+	summary=$(tr '\n' ' ' < "$error_file" 2>/dev/null | sed 's/[|]/\//g; s/[[:space:]][[:space:]]*/ /g; s/^ //; s/ $//; s/[^[:print:]]//g' | cut -c1-160)
+	[ -n "$summary" ] || summary="unknown-error"
+	printf '%s\n' "$summary"
+}
+
 kernel_umount_report() {
 	printf '%s\n' "$*" >> "$KERNEL_UMOUNT_REPORT_TEMP"
 	printf '[kernel_umount] %s\n' "$*"
@@ -175,8 +194,9 @@ apply_kernel_umount_mounts() {
 	local config_file="${1:-$PERSISTENT_DIR/config.txt}"
 	local list_file="${2:-$PERSISTENT_DIR/kernel_umount.txt}"
 	local mountinfo_file="${SUSAF_MOUNTINFO:-/proc/1/mountinfo}"
-	local mode auto check report_file candidate_file accepted_file ksu_bin
-	local target reason line add_count reject_count
+	local mode auto check report_file candidate_file accepted_file registered_file
+	local registered_next error_file ksu_bin target reason line add_error
+	local add_count existing_count inactive_count reject_count fail_count
 	umask 077
 
 	mode=$(get_conf KERNEL_UMOUNT_MODE enabled "$config_file")
@@ -240,14 +260,22 @@ apply_kernel_umount_mounts() {
 
 	candidate_file="${report_file}.candidates.$$"
 	accepted_file="${report_file}.accepted.$$"
+	registered_file="${report_file}.registered.$$"
+	registered_next="${report_file}.registered.next.$$"
+	error_file="${report_file}.error.$$"
 	: > "$candidate_file"
 	: > "$accepted_file"
+	: > "$registered_file"
 	add_count=0
+	existing_count=0
+	inactive_count=0
 	reject_count=0
+	fail_count=0
+	"$ksu_bin" kernel umount list > "$registered_file" 2>/dev/null || : > "$registered_file"
 
 	if [ "$auto" = "1" ]; then
 		collect_kernel_umount_candidates "$mountinfo_file" "$candidate_file" || {
-			rm -f "$candidate_file" "$accepted_file"
+			rm -f "$candidate_file" "$accepted_file" "$registered_file" "$registered_next" "$error_file"
 			kernel_umount_report "result=parse-failed"
 			kernel_umount_finish_report
 			return 1
@@ -271,8 +299,8 @@ apply_kernel_umount_mounts() {
 			continue
 		fi
 		if ! kernel_umount_target_is_mounted "$mountinfo_file" "$target"; then
-			kernel_umount_report "reject=$target|$reason|not-mounted"
-			reject_count=$((reject_count + 1))
+			kernel_umount_report "skip=$target|$reason|not-mounted"
+			inactive_count=$((inactive_count + 1))
 			continue
 		fi
 		if grep -Fqx "$target" "$accepted_file" 2>/dev/null; then
@@ -280,18 +308,36 @@ apply_kernel_umount_mounts() {
 			continue
 		fi
 		printf '%s\n' "$target" >> "$accepted_file"
-		if "$ksu_bin" kernel umount add "$target" --flags 2 >/dev/null 2>&1; then
+		if kernel_umount_target_is_registered "$registered_file" "$target"; then
+			kernel_umount_report "skip=$target|$reason|already-present"
+			existing_count=$((existing_count + 1))
+			continue
+		fi
+		: > "$error_file"
+		if "$ksu_bin" kernel umount add "$target" --flags 2 > "$error_file" 2>&1; then
 			kernel_umount_report "add=$target|$reason|ok"
 			add_count=$((add_count + 1))
 		else
-			kernel_umount_report "add=$target|$reason|failed"
-			reject_count=$((reject_count + 1))
+			# A concurrent registration or a prior boot can race the initial list.
+			if "$ksu_bin" kernel umount list > "$registered_next" 2>/dev/null &&
+				kernel_umount_target_is_registered "$registered_next" "$target"; then
+				mv "$registered_next" "$registered_file"
+				kernel_umount_report "skip=$target|$reason|already-present"
+				existing_count=$((existing_count + 1))
+				continue
+			fi
+			add_error=$(kernel_umount_error_summary "$error_file")
+			kernel_umount_report "add=$target|$reason|failed|$add_error"
+			fail_count=$((fail_count + 1))
 		fi
 	done < "$candidate_file"
 
-	rm -f "$candidate_file" "$accepted_file"
+	rm -f "$candidate_file" "$accepted_file" "$registered_file" "$registered_next" "$error_file"
 	kernel_umount_report "added=$add_count"
+	kernel_umount_report "existing=$existing_count"
+	kernel_umount_report "inactive=$inactive_count"
 	kernel_umount_report "rejected=$reject_count"
+	kernel_umount_report "failed=$fail_count"
 	if "$ksu_bin" kernel notify-module-mounted >/dev/null 2>&1; then
 		kernel_umount_report "notify=ok"
 	else
@@ -299,6 +345,10 @@ apply_kernel_umount_mounts() {
 		kernel_umount_finish_report
 		return 1
 	fi
-	kernel_umount_report "result=ok"
+	if [ "$fail_count" -gt 0 ]; then
+		kernel_umount_report "result=partial"
+	else
+		kernel_umount_report "result=ok"
+	fi
 	kernel_umount_finish_report
 }

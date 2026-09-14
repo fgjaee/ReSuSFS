@@ -117,6 +117,8 @@
     <string name="diagnostics_susfs_feature_count">Enabled features</string>
     <string name="diagnostics_susfs_features">Feature list</string>
     <string name="diagnostics_kernel_umount">Kernel umount</string>
+    <string name="diagnostics_selinux_hide_support">SELinux hide support</string>
+    <string name="diagnostics_selinux_hide_current">SELinux hide state</string>
     <string name="diagnostics_kernel_configured">Configured policy</string>
     <string name="diagnostics_kernel_auto">Auto discovery</string>
     <string name="diagnostics_kernel_support">Feature support</string>
@@ -125,6 +127,8 @@
     <string name="diagnostics_kernel_mount_result">Mount apply</string>
     <string name="diagnostics_kernel_candidates">Candidates</string>
     <string name="diagnostics_kernel_added">Added</string>
+    <string name="diagnostics_kernel_existing">Already registered</string>
+    <string name="diagnostics_kernel_inactive">Not mounted</string>
     <string name="diagnostics_kernel_skipped">Skipped</string>
     <string name="diagnostics_kernel_rejected">Rejected</string>
     <string name="diagnostics_kernel_failures">Failures</string>

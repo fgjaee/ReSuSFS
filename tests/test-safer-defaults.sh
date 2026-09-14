@@ -134,6 +134,34 @@ grep -Fqx 'result=disabled' "$TEST_ROOT/disable.report"
 ! grep -Fq 'find /data/adb/modules -name "*.so"' "$MODULE_DIR/configs/scripts/SusAF_apply-sus-maps.sh"
 ! grep -Fq 'find /data/adb/modules -type f' "$MODULE_DIR/configs/scripts/SusAF_apply-sus-maps.sh"
 
+PROPS_SCRIPT="$MODULE_DIR/configs/scripts/SusAF_apply-props.sh"
+for property in ro.build.fingerprint ro.build.tags ro.build.type ro.product.model \
+	ro.boot.verifiedbootstate ro.boot.flash.locked ro.secure ro.debuggable; do
+	! grep -Fq "$property" "$PROPS_SCRIPT"
+done
+! grep -Fq 'resetprop -c' "$PROPS_SCRIPT"
+
+cat > "$TEST_ROOT/bin/resetprop" <<'EOF'
+#!/bin/sh
+if [ "$#" -eq 0 ]; then
+	printf '[ro.boot.verifiedbooterror]: [failed]\n'
+	printf '[vendor.boot.verifyerrorpart]: [vbmeta]\n'
+	printf '[ro.build.fingerprint]: [stock]\n'
+	exit 0
+fi
+printf '%s\n' "$*" >> "$SUSAF_FAKE_RESETPROP_LOG"
+EOF
+chmod 755 "$TEST_ROOT/bin/resetprop"
+SUSAF_FAKE_RESETPROP_LOG="$TEST_ROOT/resetprop.log"
+export SUSAF_FAKE_RESETPROP_LOG
+: > "$SUSAF_FAKE_RESETPROP_LOG"
+PATH="$TEST_ROOT/bin:$PATH" sh "$PROPS_SCRIPT"
+grep -Fqx -- '-d ro.boot.verifiedbooterror' "$SUSAF_FAKE_RESETPROP_LOG"
+grep -Fqx -- '-d -p ro.boot.verifiedbooterror' "$SUSAF_FAKE_RESETPROP_LOG"
+grep -Fqx -- '-d vendor.boot.verifyerrorpart' "$SUSAF_FAKE_RESETPROP_LOG"
+grep -Fqx -- '-d -p vendor.boot.verifyerrorpart' "$SUSAF_FAKE_RESETPROP_LOG"
+! grep -Fq 'ro.build.fingerprint' "$SUSAF_FAKE_RESETPROP_LOG"
+
 cat > "$TEST_ROOT/bin/SusAF" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$SUSAF_FAKE_CLI_LOG"

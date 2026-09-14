@@ -13,10 +13,14 @@ Sus'AF is a [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)-based [KernelSU
 > [!WARNING]
 > Sus'AF is currently a development build. Do not treat it as a stable daily-driver release until the prerelease checklist and device tests are complete.
 
-Current test build: **v0.1.0-dev.5**. Installation is non-interactive; there
+Current test build: **v0.1.0-dev.6**. Installation is non-interactive; there
 are no Volume Up/Down choices.
 
 The remaining release gate is the [device smoke test](docs/DEVICE_SMOKE_TEST.md).
+
+Upstream changes are integrated through the documented
+[controlled merge process](docs/UPSTREAM_SYNC.md); Sus'AF is never reset or
+rebased onto ReSuSFS.
 
 ## Requirements
 
@@ -66,7 +70,7 @@ Strong hiding is applied out of the box with no configuration needed. Power user
 | `SusAF_apply-ksu-settings.sh` | post-fs-data | sets KernelSU features for hiding and compatibility |
 | `SusAF_apply-uname.sh` | post-fs-data | spoofs kernel version and build info from uname |
 | `SusAF_apply-mount-hiding.sh` | boot-completed | hides module mounts redirected to system paths |
-| `SusAF_apply-props.sh` | boot-completed | spoofs root indicators and removes custom ROM fingerprints |
+| `SusAF_apply-props.sh` | boot-completed | removes verified-boot error keys without rewriting build identity |
 | `SusAF_apply-settings.sh` | boot-completed | applies the explicit Developer Options/ADB mode; defaults to unchanged |
 | `SusAF_apply-sus-maps.sh` | boot-completed | applies exact `sus_maps.txt` targets; no blanket `.so` or font scan |
 | `SusAF_apply-sus-paths-loop.sh` | boot-completed | hides selected recovery/root-tool paths; PTY nodes are explicit-only |
@@ -76,7 +80,9 @@ Strong hiding is applied out of the box with no configuration needed. Power user
 Sus'AF resolves the KernelSU daemon from trusted standalone locations and from
 known manager-native locations, including ReSukiSU's packaged `libksud.so`.
 The Diagnostics page shows the exact daemon selected so a missing manager
-interface cannot be mistaken for missing kernel support.
+interface cannot be mistaken for missing kernel support. It also distinguishes
+newly added kernel-umount entries from targets already present in KernelSU's
+global list and shows the current `selinux_hide` support/state.
 
 `ADB_MODE=unchanged` is the safe default. `spoof-off` refuses without changing
 the working transport because this stack cannot currently spoof Settings

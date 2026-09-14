@@ -78,6 +78,10 @@ jobs:
           echo 'Donation or sponsorship link found in the module surface' >&2
           exit 1
         fi
+        if grep -Fq 'ahmed-alnassif/ReSuSFS' webui/utils/docs.js; then
+          echo 'WebUI documentation must not fetch the upstream runtime feed' >&2
+          exit 1
+        fi
         if grep -E -i -n 'KernelSU Next (is|is currently).*not recommended|Do not use KernelSU Next|anti-competitive behavior' README.md CHANGELOG.md; then
           echo 'Project-dispute language found in the public documentation' >&2
           exit 1

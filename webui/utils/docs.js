@@ -4,11 +4,6 @@ import { getString, lang } from './language.js';
 import { registerManagedPanel } from './history.js';
 import { marked } from "marked";
 
-const main = "https://raw.githubusercontent.com";
-const mirror = `https://gh.sevencdn.com/${main}`;
-const repo = "ahmed-alnassif/ReSuSFS";
-const branch = "crowdin_docs";
-
 /**
  * Fetch documents from a link and display them in the specified element
  * @param {string} element ID of the element to display the document content
@@ -17,12 +12,7 @@ const branch = "crowdin_docs";
  * @returns {void}
  */
 async function getDocuments(element, link, fallback) {
-    const urls = [
-        `${main}/${repo}/${branch}/${link}`,
-        `${main}/${repo}/${branch}/${fallback}`,
-        `${mirror}/${repo}/${branch}/${link}`,
-        `${mirror}/${repo}/${branch}/${fallback}`
-    ];
+    const urls = [...new Set([link, fallback])];
     let lastError = null;
     for (let i = 0; i < urls.length; i++) {
         const url = urls[i];
@@ -50,7 +40,7 @@ async function getDocuments(element, link, fallback) {
                 });
                 
                 const docsContent = document.getElementById(element);
-                if ((i === 1 || i === 3) && link !== fallback) {
+                if (url === fallback && link !== fallback) {
                     docsContent.setAttribute('dir', 'ltr');
                 } else {
                     docsContent.removeAttribute('dir');
@@ -130,23 +120,23 @@ export async function setupDocsMenu() {
     let langCode = lang === 'en' ? '' : '_' + lang;
     const docsData = {
         translate: {
-            link: `Documentation/localize${langCode}.md`,
-            fallback: `Documentation/localize.md`,
+            link: `docs/localize${langCode}.md`,
+            fallback: `docs/localize.md`,
             element: 'translate-content',
         },
         usage: {
-            link: `Documentation/usage${langCode}.md`,
-            fallback: `Documentation/usage.md`,
+            link: `docs/usage${langCode}.md`,
+            fallback: `docs/usage.md`,
             element: 'usage-content',
         },
         hiding: {
-            link: `Documentation/hiding${langCode}.md`,
-            fallback: `Documentation/hiding.md`,
+            link: `docs/hiding${langCode}.md`,
+            fallback: `docs/hiding.md`,
             element: 'hiding-content',
         },
         faq: {
-            link: `Documentation/faq${langCode}.md`,
-            fallback: `Documentation/faq.md`,
+            link: `docs/faq${langCode}.md`,
+            fallback: `docs/faq.md`,
             element: 'faq-content',
         },
     };

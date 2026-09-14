@@ -48,7 +48,10 @@ add=/system/bin/tool|source:KSU|ok
 skip=/system/bin/tool|explicit|duplicate
 reject=/missing|explicit|not-mounted
 added=1
+existing=2
+inactive=1
 rejected=1
+failed=0
 notify=ok
 result=ok
 EOF
@@ -118,6 +121,8 @@ cat > "$BIN_DIR/ksud" <<'EOF'
 case "$1 $2 $3" in
     'feature check kernel_umount') printf 'supported\n' ;;
     'feature get kernel_umount') printf 'Feature: kernel_umount (1)\nStatus: enabled\n' ;;
+    'feature check selinux_hide') printf 'supported\n' ;;
+    'feature get selinux_hide') printf 'Feature: selinux_hide (4)\nStatus: enabled\n' ;;
     '--version  ') printf 'ksud 1.0-test\n' ;;
     *) exit 1 ;;
 esac
@@ -173,10 +178,15 @@ grep -Fqx 'susfs.feature_count=2' "$REPORT"
 grep -Fqx "kernelsu.binary=$BIN_DIR/ksud" "$REPORT"
 grep -Fqx 'kernel_umount.support=supported' "$REPORT"
 grep -Fqx 'kernel_umount.current=enabled' "$REPORT"
+grep -Fqx 'selinux_hide.support=supported' "$REPORT"
+grep -Fqx 'selinux_hide.current=enabled' "$REPORT"
 grep -Fqx 'kernel_umount.candidates=1' "$REPORT"
 grep -Fqx 'kernel_umount.added=1' "$REPORT"
+grep -Fqx 'kernel_umount.existing=2' "$REPORT"
+grep -Fqx 'kernel_umount.inactive=1' "$REPORT"
 grep -Fqx 'kernel_umount.skipped=1' "$REPORT"
 grep -Fqx 'kernel_umount.rejected=1' "$REPORT"
+grep -Fqx 'kernel_umount.failures=0' "$REPORT"
 grep -Fqx 'targets.sus_paths=2' "$REPORT"
 grep -Fqx 'targets.sus_paths_malformed=1' "$REPORT"
 grep -Fqx 'targets.open_redirect_malformed=1' "$REPORT"
@@ -216,6 +226,37 @@ SUSAF_PROC_VERSION="$TEST_ROOT/proc-version" \
 sh "$MODULE_DIR/SusAF.sh" --diagnostics > "$TEST_ROOT/degraded.stdout"
 grep -Fqx 'overall.status=degraded' "$TEST_ROOT/degraded.stdout"
 grep -Fqx 'kernelsu.binary=unavailable' "$TEST_ROOT/degraded.stdout"
+
+# True registration failures must degrade the otherwise healthy snapshot.
+cp "$STATE_DIR/kernel_umount.report.txt" "$STATE_DIR/kernel_umount.report.saved"
+cat > "$STATE_DIR/kernel_umount.report.txt" <<'EOF'
+mode=enabled
+auto=1
+add=/system/bin/tool|source:KSU|failed|ioctl error
+added=0
+existing=0
+rejected=0
+failed=1
+notify=ok
+result=partial
+EOF
+SUSAF_MODULE_DIR="$MODULE_DIR" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+SUSAF_LEGACY_RESUSFS_DIR="$TEST_ROOT/no-resusfs" \
+SUSAF_LEGACY_SUSFS4KSU_DIR="$TEST_ROOT/no-susfs4ksu" \
+SUSAF_SUSFS_BIN="$BIN_DIR/ksu_susfs" \
+SUSAF_KSUD_BIN="$BIN_DIR/ksud" \
+SUSAF_SETTINGS_BIN="$BIN_DIR/settings" \
+SUSAF_GETPROP_BIN="$BIN_DIR/getprop" \
+SUSAF_PIDOF_BIN="$BIN_DIR/pidof" \
+SUSAF_MOUNTINFO="$TEST_ROOT/mountinfo" \
+SUSAF_BOOTCONFIG_SOURCE="$TEST_ROOT/bootconfig" \
+SUSAF_PROC_VERSION="$TEST_ROOT/proc-version" \
+sh "$MODULE_DIR/SusAF.sh" --diagnostics > "$TEST_ROOT/partial.stdout"
+grep -Fqx 'overall.status=degraded' "$TEST_ROOT/partial.stdout"
+grep -Fqx 'kernel_umount.mount_result=partial' "$TEST_ROOT/partial.stdout"
+grep -Fqx 'kernel_umount.failures=1' "$TEST_ROOT/partial.stdout"
+mv "$STATE_DIR/kernel_umount.report.saved" "$STATE_DIR/kernel_umount.report.txt"
 
 . "$MODULE_DIR/lib/stage-state.sh"
 stage_state_begin test-stage

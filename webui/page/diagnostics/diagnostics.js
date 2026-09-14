@@ -19,6 +19,8 @@ const GROUPS = {
         ['susfs.features', 'diagnostics_susfs_features'],
     ],
     kernel: [
+        ['selinux_hide.support', 'diagnostics_selinux_hide_support'],
+        ['selinux_hide.current', 'diagnostics_selinux_hide_current'],
         ['kernel_umount.configured', 'diagnostics_kernel_configured'],
         ['kernel_umount.auto', 'diagnostics_kernel_auto'],
         ['kernel_umount.support', 'diagnostics_kernel_support'],
@@ -27,6 +29,8 @@ const GROUPS = {
         ['kernel_umount.mount_result', 'diagnostics_kernel_mount_result'],
         ['kernel_umount.candidates', 'diagnostics_kernel_candidates'],
         ['kernel_umount.added', 'diagnostics_kernel_added'],
+        ['kernel_umount.existing', 'diagnostics_kernel_existing'],
+        ['kernel_umount.inactive', 'diagnostics_kernel_inactive'],
         ['kernel_umount.skipped', 'diagnostics_kernel_skipped'],
         ['kernel_umount.rejected', 'diagnostics_kernel_rejected'],
         ['kernel_umount.failures', 'diagnostics_kernel_failures'],
@@ -115,6 +119,7 @@ function valueWarns(key, value) {
     if (key.endsWith('_malformed') || key.endsWith('.failures') || key.endsWith('_error_keys')) {
         return Number.parseInt(value, 10) > 0;
     }
+    if (key.endsWith('.mount_result')) return value === 'partial';
     return false;
 }
 

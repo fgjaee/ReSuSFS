@@ -52,10 +52,22 @@ manager, SuSFS version, tester, date, and result for every section.
 - With mode `unchanged`, confirm Sus'AF does not change the feature.
 - With mode `enabled`, confirm only validated KSU/module-backed mountpoints and
   explicit entries are registered, followed by module-mounted notification.
+- Run the late stage twice and confirm existing entries are reported as already
+  registered rather than failures; no global umount-list wipe may occur.
+- Confirm Diagnostics shows the current `selinux_hide` support and state.
 - Confirm unsupported kernels degrade visibly without blocking boot.
 - Confirm no blanket `/dev/pts/*` enumeration occurs.
 - Confirm SUS_MAP applies only explicit `sus_maps.txt` targets and never every
   module `.so` or font.
+- Confirm the exact legacy `/system/etc/hosts 100 ... 1 4096` Kstat default is
+  removed on upgrade and recoverable from the migration archive.
+
+## Verified-boot property sanitation
+
+- Confirm `verifiedbooterror` and `verifyerrorpart` properties are removed when
+  present.
+- Confirm the built-in task does not rewrite fingerprint, build type, tags,
+  product identity, lock state, Developer Options, or ADB properties.
 
 ## Developer Options and ADB
 

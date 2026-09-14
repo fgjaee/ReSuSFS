@@ -4,5 +4,6 @@
 # changed ino/dev while keeping size/blocks consistent with the pre-mount stat
 # use update_sus_kstat_full_clone instead if you want the full stat cloned
 #
-# typical use: a file you're bind-mounting over, e.g. a spoofed hosts file
-# /system/etc/hosts
+# Only add a path after confirming its stat identity needs correction. Module
+# mounts such as hosts are handled by targeted KernelSU umount registration and
+# should not receive a guessed Kstat record.

@@ -3,6 +3,24 @@
 This changelog covers Sus'AF development. Upstream history remains available in
 Git history and the upstream project; it is not repeated here.
 
+## v0.1.0-dev.6 — 2026-09-14
+
+- Correctly classifies KernelSU umount targets that are already registered,
+  rather than reporting the kernel's duplicate response as a failed add. True
+  add failures are recorded separately and now degrade the diagnostic status.
+- Reports safe explicit paths that are not current mountpoints as inactive
+  instead of rejected.
+- Added KernelSU SELinux-hide support/state and already-registered umount counts
+  to the WebUI Diagnostics page.
+- Added a recoverable upgrade repair for the exact legacy hosts-file Kstat
+  default. The removed line is archived under Sus'AF's migration directory.
+- Reduced the inherited property task to the requested `verifiedbooterror` and
+  `verifyerrorpart` sanitation. It no longer rewrites fingerprint, build type,
+  tags, lock state, ADB, product, or other boot properties after initialization.
+- Replaced the WebUI's runtime download of upstream ReSuSFS documentation with
+  bundled Sus'AF documentation, preventing old branding, donation material, or
+  root-manager commentary from reappearing through the module interface.
+
 ## v0.1.0-dev.5 — 2026-09-14
 
 - Added trusted discovery of manager-packaged KernelSU daemons, including

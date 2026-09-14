@@ -158,6 +158,7 @@ generate_diagnostics() {
 	local boot_source boot_format live_error_count generated_error_count
 	local module_status overall susfs_status susfs_version susfs_variant
 	local features feature_count ksu_bin ksu_check ksu_current ksu_version kernel_mode
+	local selinux_check selinux_current mount_result mount_failures
 	local persistent_owner persistent_mode proc_version uname_release uname_version
 
 	umask 077
@@ -213,12 +214,34 @@ generate_diagnostics() {
 		ksu_current=unknown
 		ksu_version=unavailable
 	fi
+	if [ -n "$ksu_bin" ]; then
+		selinux_check=$("$ksu_bin" feature check selinux_hide 2>/dev/null) || selinux_check=unavailable
+		case "$selinux_check" in
+			supported|managed|unsupported) ;;
+			*) selinux_check=unavailable ;;
+		esac
+		selinux_current=$("$ksu_bin" feature get selinux_hide 2>/dev/null | awk -F': ' '$1 == "Status" { print $2; exit }') || selinux_current=unknown
+		[ -n "$selinux_current" ] || selinux_current=unknown
+	else
+		selinux_check=unavailable
+		selinux_current=unknown
+	fi
 	kernel_mode=$(get_conf KERNEL_UMOUNT_MODE enabled "$PERSISTENT_DIR/config.txt")
+	mount_result=$(diagnostics_property "$mount_report" result not-recorded)
+	mount_failures=$(diagnostics_property "$mount_report" failed "")
+	if [ -z "$mount_failures" ]; then
+		mount_failures=$(awk '/^add=.*\|failed(\||$)/ { count++ } END { print count + 0 }' "$mount_report" 2>/dev/null)
+	fi
 	if [ "$module_status" != disabled ] && [ "$kernel_mode" = enabled ]; then
 		case "$ksu_check" in
 			supported|managed) ;;
 			*) overall=degraded ;;
 		esac
+		case "$mount_failures" in
+			''|*[!0-9]*) overall=degraded ;;
+			*) [ "$mount_failures" -eq 0 ] || overall=degraded ;;
+		esac
+		[ "$mount_result" = ok ] || overall=degraded
 	fi
 
 	: > "$candidates"
@@ -262,17 +285,21 @@ generate_diagnostics() {
 
 		diagnostics_put kernelsu.version "$ksu_version"
 		diagnostics_put kernelsu.binary "${ksu_bin:-unavailable}"
+		diagnostics_put selinux_hide.support "$selinux_check"
+		diagnostics_put selinux_hide.current "$selinux_current"
 		diagnostics_put kernel_umount.configured "$kernel_mode"
 		diagnostics_put kernel_umount.auto "$(get_conf AUTO_KERNEL_UMOUNT 1 "$PERSISTENT_DIR/config.txt")"
 		diagnostics_put kernel_umount.support "$ksu_check"
 		diagnostics_put kernel_umount.current "$ksu_current"
 		diagnostics_put kernel_umount.feature_result "$(diagnostics_property "$feature_report" result not-recorded)"
-		diagnostics_put kernel_umount.mount_result "$(diagnostics_property "$mount_report" result not-recorded)"
+		diagnostics_put kernel_umount.mount_result "$mount_result"
 		diagnostics_put kernel_umount.candidates "$(diagnostics_list_count "$candidates")"
 		diagnostics_put kernel_umount.added "$(diagnostics_property "$mount_report" added 0)"
+		diagnostics_put kernel_umount.existing "$(diagnostics_property "$mount_report" existing 0)"
+		diagnostics_put kernel_umount.inactive "$(diagnostics_property "$mount_report" inactive 0)"
 		diagnostics_put kernel_umount.skipped "$(diagnostics_report_count "$mount_report" 'skip=')"
 		diagnostics_put kernel_umount.rejected "$(diagnostics_property "$mount_report" rejected 0)"
-		diagnostics_put kernel_umount.failures "$(awk '/^add=.*\|failed$/ { count++ } END { print count + 0 }' "$mount_report" 2>/dev/null)"
+		diagnostics_put kernel_umount.failures "$mount_failures"
 		diagnostics_put kernel_umount.notify "$(diagnostics_property "$mount_report" notify not-recorded)"
 
 		diagnostics_put targets.sus_paths "$(diagnostics_list_count "$PERSISTENT_DIR/sus_paths.txt")"

@@ -23,6 +23,7 @@ awk 'BEGIN { for (i = 0; i < 8200; i++) printf "x" }' > "$PERSISTENT_DIR/cmdline
 cat > "$PERSISTENT_DIR/kstat_paths.txt" <<'EOF'
 # keep this comment
 /system/etc/hosts 100 default default 64 default default default default default default 1 4096
+/system/etc/hosts 101 default default 64 default default default default default default 1 4096
 /data/adb/ReSuSFS default default default default default default default default default default default default
 /data/adb/SusAF default default default default default default default default default default default default
 EOF
@@ -44,12 +45,14 @@ grep -Fq 'mine' "$PERSISTENT_DIR/scripts/MyCustom.sh"
 cmp "$PACKAGE_DIR/cmdline_or_bootconfig.txt" "$PERSISTENT_DIR/cmdline_or_bootconfig.txt"
 find "$PERSISTENT_DIR/migration" -path '*/repaired-config/cmdline_or_bootconfig.txt' -size 8200c | grep -q .
 grep -Fqx '# keep this comment' "$PERSISTENT_DIR/kstat_paths.txt"
-grep -Fqx '/system/etc/hosts 100 default default 64 default default default default default default 1 4096' "$PERSISTENT_DIR/kstat_paths.txt"
+! grep -Fqx '/system/etc/hosts 100 default default 64 default default default default default default 1 4096' "$PERSISTENT_DIR/kstat_paths.txt"
+grep -Fqx '/system/etc/hosts 101 default default 64 default default default default default default 1 4096' "$PERSISTENT_DIR/kstat_paths.txt"
 ! grep -Fq '/data/adb/ReSuSFS' "$PERSISTENT_DIR/kstat_paths.txt"
 ! grep -Fq '/data/adb/SusAF' "$PERSISTENT_DIR/kstat_paths.txt"
 kstat_backup=$(find "$PERSISTENT_DIR/migration" -path '*/repaired-config/kstat_paths.txt' -print -quit)
 [ -n "$kstat_backup" ]
 grep -Fq '/data/adb/ReSuSFS' "$kstat_backup"
+grep -Fq '/system/etc/hosts 100 default default 64' "$kstat_backup"
 find "$PERSISTENT_DIR/migration" -path '*/replaced-builtins/BuiltInLate.sh' \
 	-exec grep -Fq 'old built-in' {} \;
 
