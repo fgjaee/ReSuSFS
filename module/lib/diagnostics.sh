@@ -158,7 +158,7 @@ generate_diagnostics() {
 	local boot_source boot_format live_error_count generated_error_count
 	local module_status overall susfs_status susfs_version susfs_variant
 	local features feature_count ksu_bin ksu_check ksu_current ksu_version kernel_mode
-	local selinux_check selinux_current mount_result mount_failures
+	local selinux_check selinux_current mount_filter_early mount_filter_late mount_result mount_failures
 	local persistent_owner persistent_mode proc_version uname_release uname_version
 
 	umask 077
@@ -227,6 +227,8 @@ generate_diagnostics() {
 		selinux_current=unknown
 	fi
 	kernel_mode=$(get_conf KERNEL_UMOUNT_MODE enabled "$PERSISTENT_DIR/config.txt")
+	mount_filter_early=$(get_conf HIDE_SUS_MNTS_NON_SU 0 "$PERSISTENT_DIR/config.txt")
+	mount_filter_late=$(get_conf HIDE_SUS_MNTS_LATE 0 "$PERSISTENT_DIR/config.txt")
 	mount_result=$(diagnostics_property "$mount_report" result not-recorded)
 	mount_failures=$(diagnostics_property "$mount_report" failed "")
 	if [ -z "$mount_failures" ]; then
@@ -243,6 +245,10 @@ generate_diagnostics() {
 		esac
 		[ "$mount_result" = ok ] || overall=degraded
 	fi
+	case "$mount_filter_late" in
+	0) ;;
+	*) [ "$module_status" = disabled ] || overall=degraded ;;
+	esac
 
 	: > "$candidates"
 	collect_kernel_umount_candidates "$mountinfo_file" "$candidates" 2>/dev/null || : > "$candidates"
@@ -287,6 +293,8 @@ generate_diagnostics() {
 		diagnostics_put kernelsu.binary "${ksu_bin:-unavailable}"
 		diagnostics_put selinux_hide.support "$selinux_check"
 		diagnostics_put selinux_hide.current "$selinux_current"
+		diagnostics_put mount_filter.early "$mount_filter_early"
+		diagnostics_put mount_filter.late "$mount_filter_late"
 		diagnostics_put kernel_umount.configured "$kernel_mode"
 		diagnostics_put kernel_umount.auto "$(get_conf AUTO_KERNEL_UMOUNT 1 "$PERSISTENT_DIR/config.txt")"
 		diagnostics_put kernel_umount.support "$ksu_check"

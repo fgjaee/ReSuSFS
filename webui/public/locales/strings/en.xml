@@ -65,9 +65,11 @@
     <string name="box_entry_count">%d entries</string>
     <!-- Toggles -->
     <string name="toggles_title">Toggles</string>
-    <string name="toggles_description">Simple kernel flags applied via hide_sus_mnts_for_non_su_procs, enable_log and enable_avc_log_spoofing.</string>
-    <string name="toggle_hide_mnts">Hide Mounts</string>
-    <string name="toggle_hide_mnts_desc">Applied in post-fs-data or boot-completed, once mounts have settled for user processes.</string>
+    <string name="toggles_description">Staged kernel flags for mount visibility, logging, and AVC context sanitation.</string>
+    <string name="toggle_hide_mnts">Early-boot mount guard</string>
+    <string name="toggle_hide_mnts_desc">Temporarily filters Sus mounts during post-fs-data so zygote does not cache them.</string>
+    <string name="toggle_hide_mnts_late">Keep blanket filtering after boot</string>
+    <string name="toggle_hide_mnts_late_desc">Compatibility option. Leave off to avoid app and isolated-process mount-table drift.</string>
     <string name="toggle_enable_log">Enable SuSFS Log</string>
     <string name="toggle_enable_log_desc">Turns on susfs' own kernel logging.</string>
     <string name="toggle_avc_spoof">Spoof AVC 'su' Context</string>
@@ -140,6 +142,8 @@
     <string name="diagnostics_kernel_umount">Kernel umount</string>
     <string name="diagnostics_selinux_hide_support">SELinux hide support</string>
     <string name="diagnostics_selinux_hide_current">SELinux hide state</string>
+    <string name="diagnostics_mount_filter_early">Early mount filter</string>
+    <string name="diagnostics_mount_filter_late">Late blanket mount filter</string>
     <string name="diagnostics_kernel_configured">Configured policy</string>
     <string name="diagnostics_kernel_auto">Auto discovery</string>
     <string name="diagnostics_kernel_support">Feature support</string>

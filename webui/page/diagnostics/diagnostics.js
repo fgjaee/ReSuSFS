@@ -21,6 +21,8 @@ const GROUPS = {
     kernel: [
         ['selinux_hide.support', 'diagnostics_selinux_hide_support'],
         ['selinux_hide.current', 'diagnostics_selinux_hide_current'],
+        ['mount_filter.early', 'diagnostics_mount_filter_early'],
+        ['mount_filter.late', 'diagnostics_mount_filter_late'],
         ['kernel_umount.configured', 'diagnostics_kernel_configured'],
         ['kernel_umount.auto', 'diagnostics_kernel_auto'],
         ['kernel_umount.support', 'diagnostics_kernel_support'],
@@ -120,6 +122,7 @@ function valueWarns(key, value) {
         return Number.parseInt(value, 10) > 0;
     }
     if (key.endsWith('.mount_result')) return value === 'partial';
+    if (key === 'mount_filter.late') return value === '1';
     return false;
 }
 

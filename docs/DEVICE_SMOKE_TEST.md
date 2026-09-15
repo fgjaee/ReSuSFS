@@ -52,6 +52,9 @@ manager, SuSFS version, tester, date, and result for every section.
 - With mode `unchanged`, confirm Sus'AF does not change the feature.
 - With mode `enabled`, confirm only validated KSU/module-backed mountpoints and
   explicit entries are registered, followed by module-mounted notification.
+- Confirm Diagnostics reports early mount filter `1` and late blanket mount
+  filter `0`; targeted KernelSU umount entries remain registered after the late
+  blanket filter is released.
 - Run the late stage twice and confirm existing entries are reported as already
   registered rather than failures; no global umount-list wipe may occur.
 - Confirm Diagnostics shows the current `selinux_hide` support and state.

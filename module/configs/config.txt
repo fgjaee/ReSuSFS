@@ -1,11 +1,13 @@
 # KEY=VALUE toggles, one per line, blank = skip that toggle
 #
 # hide_sus_mnts_for_non_su_procs: 0 = don't hide, 1 = hide all sus mounts
-#   for non-su processes (default 0 in kernel). Useful to set to 1 early
-#   (post-fs-data) if using ReZygisk without TreatWheel, to stop zygote
-#   from caching the sus mounts in memory, and set back to 0 later
-#   (boot-completed) to let kernel/zygisk unmount them for user processes —
-#   or just leave it enabled if you prefer.
+#   for non-su processes (default 0 in kernel). The early value protects zygote
+#   startup from caching Sus mounts. The late value is deliberately 0 so normal
+#   app and isolated-process mount views are not blanket-filtered after boot;
+#   targeted KernelSU umount and Sus path rules remain active.
+#
+#   Keep HIDE_SUS_MNTS_LATE=1 only for a stack that explicitly requires the
+#   legacy always-on behavior. It can create cross-process mount-table drift.
 #
 # enable_log: 0 = disable susfs kernel log, 1 = enable
 #
@@ -15,6 +17,7 @@
 #   debugging permission/selinux issues.
 #
 HIDE_SUS_MNTS_NON_SU=1
+HIDE_SUS_MNTS_LATE=0
 ENABLE_LOG=0
 ENABLE_AVC_LOG_SPOOFING=1
 

@@ -60,4 +60,38 @@ SUSAF_MODULE_DIR="$MODULE_DIR" \
 	NO_BANNER=1 sh "$MODULE_DIR/SusAF.sh" --apply-kstat-add >/dev/null
 grep -Fqx "add_sus_kstat $TEST_ROOT" "$TEST_ROOT/susfs.log"
 
+: > "$TEST_ROOT/susfs.log"
+cat > "$PERSISTENT_DIR/config.txt" <<'EOF'
+HIDE_SUS_MNTS_NON_SU=1
+HIDE_SUS_MNTS_LATE=0
+ENABLE_LOG=0
+ENABLE_AVC_LOG_SPOOFING=1
+EOF
+SUSAF_MODULE_DIR="$MODULE_DIR" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+SUSAF_SUSFS_BIN="$TEST_ROOT/bin/ksu_susfs" \
+SUSAF_FAKE_SUSFS_LOG="$TEST_ROOT/susfs.log" \
+NO_BANNER=1 sh "$MODULE_DIR/SusAF.sh" --apply-toggles early >/dev/null
+grep -Fqx 'hide_sus_mnts_for_non_su_procs 1' "$TEST_ROOT/susfs.log"
+
+: > "$TEST_ROOT/susfs.log"
+SUSAF_MODULE_DIR="$MODULE_DIR" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+SUSAF_SUSFS_BIN="$TEST_ROOT/bin/ksu_susfs" \
+SUSAF_FAKE_SUSFS_LOG="$TEST_ROOT/susfs.log" \
+NO_BANNER=1 sh "$MODULE_DIR/SusAF.sh" --apply-toggles late >/dev/null
+grep -Fqx 'hide_sus_mnts_for_non_su_procs 0' "$TEST_ROOT/susfs.log"
+! grep -Fq 'enable_log' "$TEST_ROOT/susfs.log"
+
+: > "$TEST_ROOT/susfs.log"
+sed -i '/^HIDE_SUS_MNTS_LATE=/d' "$PERSISTENT_DIR/config.txt"
+SUSAF_MODULE_DIR="$MODULE_DIR" \
+SUSAF_PERSISTENT_DIR="$PERSISTENT_DIR" \
+SUSAF_SUSFS_BIN="$TEST_ROOT/bin/ksu_susfs" \
+SUSAF_FAKE_SUSFS_LOG="$TEST_ROOT/susfs.log" \
+NO_BANNER=1 sh "$MODULE_DIR/SusAF.sh" --apply-toggles current >/dev/null
+grep -Fqx 'hide_sus_mnts_for_non_su_procs 0' "$TEST_ROOT/susfs.log"
+grep -Fqx 'enable_log 0' "$TEST_ROOT/susfs.log"
+grep -Fqx 'enable_avc_log_spoofing 1' "$TEST_ROOT/susfs.log"
+
 echo "config-action tests passed"

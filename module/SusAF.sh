@@ -315,19 +315,49 @@ status_report() {
 apply_toggles() {
 	stage="$1"
 	file="${2:-$PERSISTENT_DIR/config.txt}"
+	result=0
 	[ -f "$file" ] || return
-	if [ "$stage" = "early" ]; then
+	case "$stage" in
+	early)
 		hide_mnts=$(get_conf HIDE_SUS_MNTS_NON_SU "" "$file")
 		enable_log=$(get_conf ENABLE_LOG "" "$file")
 		avc_spoof=$(get_conf ENABLE_AVC_LOG_SPOOFING "" "$file")
+		;;
+	late)
+		hide_mnts=$(get_conf HIDE_SUS_MNTS_LATE 0 "$file")
+		enable_log=""
+		avc_spoof=""
+		;;
+	current)
+		hide_mnts=$(get_conf HIDE_SUS_MNTS_LATE 0 "$file")
+		enable_log=$(get_conf ENABLE_LOG "" "$file")
+		avc_spoof=$(get_conf ENABLE_AVC_LOG_SPOOFING "" "$file")
+		;;
+	*)
+		echo "[x] invalid toggle stage: $stage"
+		return 1
+		;;
+	esac
 
-		[ -n "$hide_mnts" ] && { echo "[>] hide_sus_mnts_for_non_su_procs $hide_mnts (early)"; susfs hide_sus_mnts_for_non_su_procs "$hide_mnts"; }
-		[ -n "$enable_log" ] && { echo "[>] enable_log $enable_log"; susfs enable_log "$enable_log"; }
-		[ -n "$avc_spoof" ] && { echo "[>] enable_avc_log_spoofing $avc_spoof"; susfs enable_avc_log_spoofing "$avc_spoof"; }
-	elif [ "$stage" = "late" ]; then
-		hide_mnts=$(get_conf HIDE_SUS_MNTS_NON_SU "" "$file")
-		[ -n "$hide_mnts" ] && { echo "[>] hide_sus_mnts_for_non_su_procs $hide_mnts (late)"; susfs hide_sus_mnts_for_non_su_procs "$hide_mnts"; }
-	fi
+	case "$hide_mnts" in
+	"") ;;
+	0|1)
+		echo "[>] hide_sus_mnts_for_non_su_procs $hide_mnts ($stage)"
+		susfs hide_sus_mnts_for_non_su_procs "$hide_mnts" || result=1
+		;;
+	*) echo "[x] invalid hide-mounts value: $hide_mnts"; result=1 ;;
+	esac
+	case "$enable_log" in
+	"") ;;
+	0|1) echo "[>] enable_log $enable_log"; susfs enable_log "$enable_log" || result=1 ;;
+	*) echo "[x] invalid log value: $enable_log"; result=1 ;;
+	esac
+	case "$avc_spoof" in
+	"") ;;
+	0|1) echo "[>] enable_avc_log_spoofing $avc_spoof"; susfs enable_avc_log_spoofing "$avc_spoof" || result=1 ;;
+	*) echo "[x] invalid AVC-spoof value: $avc_spoof"; result=1 ;;
+	esac
+	return "$result"
 }
 
 stage_early() {
@@ -391,7 +421,7 @@ show_help () {
 	printf " --apply-uname [file] \t\t\tset_uname from config\n"
 	printf " --apply-cmdline-bootconfig [file] \tset_cmdline_or_bootconfig from file\n"
 	printf " --apply-cmdline-bootconfig-direct <file> \tapply generated data without saving it\n"
-	printf " --apply-toggles <early|late> [file] \tapply hide_sus_mnts/enable_log/avc_log_spoofing from config\n"
+	printf " --apply-toggles <early|late|current> [file] \tapply staged mount/log/avc policy from config\n"
 	printf " --apply-kernel-umount-feature [config] \tapply the KernelSU feature policy\n"
 	printf " --apply-kernel-umount-mounts [config] [list] \tregister targeted mountpoints\n"
 	printf " --run-script <file> \t\t\trun a user script from UserHub\n"

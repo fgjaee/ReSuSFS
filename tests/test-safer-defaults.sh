@@ -140,6 +140,8 @@ for property in ro.build.fingerprint ro.build.tags ro.build.type ro.product.mode
 	! grep -Fq "$property" "$PROPS_SCRIPT"
 done
 ! grep -Fq 'resetprop -c' "$PROPS_SCRIPT"
+grep -Fqx 'HIDE_SUS_MNTS_NON_SU=1' "$MODULE_DIR/configs/config.txt"
+grep -Fqx 'HIDE_SUS_MNTS_LATE=0' "$MODULE_DIR/configs/config.txt"
 
 cat > "$TEST_ROOT/bin/resetprop" <<'EOF'
 #!/bin/sh

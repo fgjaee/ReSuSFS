@@ -141,6 +141,7 @@ async function applyCustomFile(key) {
 
 const TOGGLE_ROWS = [
     { id: 'toggle-hide-mnts', key: 'HIDE_SUS_MNTS_NON_SU' },
+    { id: 'toggle-hide-mnts-late', key: 'HIDE_SUS_MNTS_LATE' },
     { id: 'toggle-enable-log', key: 'ENABLE_LOG' },
     { id: 'toggle-avc-spoof', key: 'ENABLE_AVC_LOG_SPOOFING' },
 ];
@@ -188,7 +189,7 @@ function setupToggles() {
     });
     document.getElementById('apply-toggles').onclick = async () => {
         await saveToggles();
-        runSusAF('--apply-toggles', 'early');
+        runSusAF('--apply-toggles', 'current');
     };
 }
 

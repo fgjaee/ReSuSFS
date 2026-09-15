@@ -13,7 +13,7 @@ Sus'AF is a [ReSuSFS](https://github.com/ahmed-alnassif/ReSuSFS)-based [KernelSU
 > [!WARNING]
 > Sus'AF is currently a development build. Do not treat it as a stable daily-driver release until the prerelease checklist and device tests are complete.
 
-Current test build: **v0.1.0-dev.6**. Installation is non-interactive; there
+Current test build: **v0.1.0-dev.7**. Installation is non-interactive; there
 are no Volume Up/Down choices.
 
 The remaining release gate is the [device smoke test](docs/DEVICE_SMOKE_TEST.md).

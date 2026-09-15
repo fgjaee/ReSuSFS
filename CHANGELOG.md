@@ -3,6 +3,18 @@
 This changelog covers Sus'AF development. Upstream history remains available in
 Git history and the upstream project; it is not repeated here.
 
+## v0.1.0-dev.7 — 2026-09-15
+
+- Fixed an inherited boot-stage bug that kept broad Sus mount filtering enabled
+  after boot even though the configuration documentation described turning it
+  off. The early zygote guard remains enabled by default; the late blanket
+  filter now defaults off while targeted KernelSU umount and Sus path rules stay
+  active.
+- Added separate early and late mount-filter controls to the WebUI. Existing
+  configurations without the new late key safely default to off.
+- Added both staged filter values to Diagnostics; enabling the late blanket
+  compatibility mode is now visibly treated as degraded configuration.
+
 ## v0.1.0-dev.6 — 2026-09-14
 
 - Correctly classifies KernelSU umount targets that are already registered,
